@@ -119,7 +119,8 @@ dependencies {
 
 **关键点**：
 - `compileOnly(project(":plugin-core"))` - 插件核心接口
-- `isMinifyEnabled = false` - 避免 Kotlin stdlib 方法丢失
+- `isMinifyEnabled = false` - 推荐禁用混淆，避免 Kotlin stdlib 方法丢失
+- 即使禁用混淆，某些 Kotlin stdlib 方法仍可能被宿主应用的 R8 规则裁剪，详见[插件可用的 API 范围](#6-插件可用的-api-范围)
 - 不需要 Compose 依赖（插件无 UI）
 
 ### 3. 配置 AndroidManifest.xml
@@ -279,23 +280,54 @@ class PluginDeclaration : Activity() {
 }
 ```
 
-### 6. ProGuard 规则（可选）
+### 6. 插件可用的 API 范围
 
-如果启用混淆，需要添加规则：
+插件通过宿主应用的 `PluginClassLoader` 加载，Kotlin stdlib 来自宿主应用。
+宿主应用的 ProGuard/R8 规则决定了哪些 Kotlin stdlib 方法会保留。
+
+#### 宿主应用保留的 Kotlin stdlib 包
+
+宿主应用明确保留了以下 Kotlin stdlib 包，**插件可以安全使用**：
+
+| 包 | 说明 |
+|------|------|
+| `kotlin.jvm.internal` | JVM 内部实现（如 `Intrinsics`） |
+| `kotlin.collections` | 集合操作（`listOf`、`mapOf`、`filter`、`map` 等） |
+| `kotlin.text` | 字符串处理（`split`、`replace`、`contains` 等） |
+| `kotlin.comparisons` | 比较操作（`compareBy`、`thenBy` 等） |
+| `kotlin.ranges` | 范围操作（`1..10`、`downTo` 等） |
+| `kotlin.sequences` | 序列操作（`sequenceOf`、`asSequence` 等） |
+
+#### 插件不可用的 Kotlin stdlib 功能
+
+以下 Kotlin stdlib 包**未在宿主应用中保留**，插件应避免使用，否则可能在运行时抛出 `NoSuchMethodError`：
+
+| 包 | 替代方案 |
+|------|----------|
+| `kotlin.io`（如 `readBytes`、`writeText` 等文件操作） | 使用 `java.io.*` 标准库 |
+| `kotlin.reflect`（如 `memberProperties`、`cast` 等反射操作） | 使用 `java.lang.reflect.*` |
+| `kotlin.math`（如 `sin`、`cos` 等数学函数） | 使用 `java.lang.Math` 或 `kotlin.math.*`（需自行保留） |
+| `kotlin.system`（如 `measureTimeMillis`） | 避免使用 |
+| `kotlin.concurrent`（如 `Thread` 扩展函数） | 使用 `java.util.concurrent.*` |
+| `kotlin.random`（如 `Random`） | 使用 `java.util.Random` |
+| `kotlin.time`（如 `measureTime`、`Duration`） | 使用 `System.currentTimeMillis()` |
+| `kotlinx.*`（协程、序列化等） | 如需使用请自行打包在插件 APK 中 |
+
+#### 插件 ProGuard 规则
+
+如果启用混淆，不需要再保留 Kotlin stdlib（由宿主应用负责），只需保留插件自身的类和入口：
 
 ```proguard
 # Plugin ProGuard rules
 -dontobfuscate
 -optimizations !class/merging/*
 
--keep class kotlin.** { *; }
--keepnames class kotlin.** { *; }
-
+# 保留插件自身代码
 -keep class com.example.plugin.** { *; }
 -keepattributes SourceFile,LineNumberTable
 ```
 
-**注意**：推荐禁用混淆（`isMinifyEnabled = false`），避免 Kotlin stdlib 方法丢失问题。
+**推荐**：保持 `isMinifyEnabled = false`（禁用混淆），这是最简单可靠的做法。
 
 ## 插件数据结构
 
@@ -367,11 +399,14 @@ adb install my-plugin/build/outputs/apk/debug/my-plugin-xxx.apk
 
 ### 1. ClassNotFoundException 或 NoSuchMethodError
 
-**原因**：ProGuard 混淆导致 Kotlin 方法丢失
+**原因**：
+- 插件使用了宿主应用未保留的 Kotlin stdlib 方法（如 `kotlin.io`、`kotlin.math` 等），R8 裁剪后运行时找不到
+- 插件启用了混淆导致自身类名或方法被重命名
 
 **解决**：
 1. 禁用混淆：`isMinifyEnabled = false`（推荐）
-2. 或添加 ProGuard 规则：`-keep class kotlin.** { *; }`
+2. 检查代码是否使用了[不可用的 Kotlin stdlib 包](#宿主应用保留的-kotlin-stdlib-包)，改用 Java 标准库替代
+3. 如需保留特定 Kotlin 方法，可在插件自身添加 ProGuard 规则，但需注意宿主应用不一定包含这些方法
 
 ### 2. 插件无法发现
 
