@@ -63,7 +63,8 @@ export default defineConfig({
             { text: '快捷发送', link: '/features/quick-send' },
             { text: '表情', link: '/features/emoji' },
             { text: '计算器', link: '/features/calculator' },
-            { text: '工具栏自定义', link: '/features/toolbar' }
+            { text: '工具栏自定义', link: '/features/toolbar' },
+    
           ]
         },
         {
@@ -72,6 +73,11 @@ export default defineConfig({
             { text: '插件列表', link: '/plugins/' },
             { text: '开发指南', link: '/plugins/PLUGIN_DEVELOPMENT_GUIDE' },
             { text: '测试指南', link: '/plugins/TESTING' }
+          ]
+        },{
+          text:'高级设置',
+          items: [
+            {text:"键盘配置自定义", link: '/features/keyboard-config'},
           ]
         }
       ]
