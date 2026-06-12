@@ -71,6 +71,22 @@
 
 > ⚠️ **按需启用方案**：部署时会编译所有已启用的方案所引用的词典。如果一次性启用了过多方案（尤其是包含大词库的方案，如雾凇拼音的 `tencent.dict.yaml` 等），部署时间会显著增长。建议只开启你实际会用到的方案，不需要的方案保持关闭状态。
 
+
+## 支持方案列表
+
+下表列出了一些常见的 Rime 输入方案及其在本应用中的兼容情况。
+
+| 方案名称 | 方案下载地址 | 支持情况 | 说明 |
+|---------|------------|---------|------|
+| 雾凇拼音 | [rime-ice](https://github.com/iDvel/rime-ice) | ✅ 完全支持 | 完整方案包，含子目录结构（`cn_dicts/`、`en_dicts/`、`opencc/`），可直接导入 |
+| 万象拼音（基础版） | [amzxyz/rime-wanxiang](https://github.com/amzxyz/rime-wanxiang) | ✅ 完全支持 | 下载 Release 中的 `rime-wanxiang-基础版.zip` 还有必须的大模型语法包 (必装组件)，必须重新解压，把大模型语法包放入根目录，再重新打包！|
+| 朙月拼音 | [rime/rime-luna-pinyin](https://github.com/rime/rime-luna-pinyin) | ✅ 完全支持 | 标准 Rime 方案包，直接导入 `.zip` 即可使用 |
+| 宇浩输入法方案 | [forfudan/yuhao-ime-release](https://github.com/forfudan/yuhao-ime-release) | ❌ 不支持 | 方案包结构不符合本应用的导入规范，需要自行处理后再导入 |
+| 郑码 | [chen32768/zhengma_for_rime](https://github.com/chen32768/zhengma_for_rime) | ✅ 完全支持 | 标准 Rime 方案包，下载 Release 中的 `zhengma_for_rime.zip` 直接导入即可 |
+
+> 注：不在上表中的方案不代表不支持，只要方案包格式符合[兼容性说明](#兼容性说明)的要求均可正常导入使用。
+
+
 ## 删除方案
 
 1. 在「未启用」列表中找到要删除的方案
