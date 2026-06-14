@@ -72,8 +72,10 @@ my-kime-plugin/
 
 ```kotlin
 plugins {
+    // AGP 9.0+ 已内置 Kotlin 编译支持
+    // 如果使用 AGP 9.0+，不需要单独应用 kotlin-android 插件
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.android") version "2.3.20" apply false
 }
 
 android {
@@ -101,19 +103,20 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     
-    kotlin {
-        compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-        }
-    }
+    // AGP 9.0+ 中改用 kotlinCompilerOptions 块（如果使用旧版 AGP，请使用 kotlin 块）
+    // kotlin {
+    //     compilerOptions {
+    //         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    //     }
+    // }
 }
 
 dependencies {
     // compileOnly 依赖，插件运行时由 PluginClassLoader 加载
     compileOnly(project(":plugin-core"))
     
-    // 如果需要加载图片，添加 coil（implementation）
-    implementation("io.coil-kt:coil-compose:2.5.0")
+    // 不需要 appcompat、material、core-ktx 等 UI 库
+    // 插件不需要 UI，不依赖 Compose
 }
 ```
 
@@ -122,6 +125,11 @@ dependencies {
 - `isMinifyEnabled = false` - 推荐禁用混淆，避免 Kotlin stdlib 方法丢失
 - 即使禁用混淆，某些 Kotlin stdlib 方法仍可能被宿主应用的 R8 规则裁剪，详见[插件可用的 API 范围](#6-插件可用的-api-范围)
 - 不需要 Compose 依赖（插件无 UI）
+
+> ⚠️ **AGP 9.0+ 注意事项**：如果使用 AGP 9.0 及以上版本，
+> 不需要显式应用 `kotlin("android")` 或 `org.jetbrains.kotlin.android` 插件，
+> AGP 已内置 Kotlin 编译支持。但仍需在 `build.gradle.kts` 中配置
+> Kotlin 编译选项（如 `compileOptions` 中的 jvmTarget）。
 
 ### 3. 配置 AndroidManifest.xml
 
@@ -227,6 +235,7 @@ class MyPlugin : EmojiPlugin {
                                     insertText = fileName,
                                     imageUrl = null, // 或本地文件路径
                                     category = "默认"
+                                    // displayConfig 可选，不传则使用默认配置
                                 )
                             )
                         }
@@ -255,9 +264,11 @@ class MyPlugin : EmojiPlugin {
         return emojiList.map { it.category }.distinct()
     }
     
-    override fun getIcon(): PluginIcon? = PluginIcon(assetName = "icon.webp")
+    override fun getIcon(): PluginIcon? = PluginIcon(assetName = "icon.png")
+    // 注意：assetName 必须是纯文件名，不能包含路径（如 "emojis/icon.png" 会报错）
     
-    // 或者使用文本图标：PluginIcon(text = "🐰")
+    // 或者使用文本图标（推荐，简单可靠）：
+    // override fun getIcon(): PluginIcon? = PluginIcon(text = "🐰")
     
     // hasSettings() 默认返回 false，不需要设置界面
     // openSettings() 默认空实现
@@ -334,37 +345,92 @@ class PluginDeclaration : Activity() {
 ### EmojiItem
 
 ```kotlin
+data class EmojiDisplayConfig(
+    val span: Int = 1,           // 网格跨列数
+    val heightDp: Int = 40,      // 自定义高度
+    val aspectRatio: Float? = null // 宽高比（图片表情用）
+)
+
 data class EmojiItem(
-    val id: String,          // 唯一标识
-    val displayText: String, // 显示文本
-    val insertText: String,  // 插入文本
-    val imageUrl: String?,   // 图片 URL（本地路径或网络 URL）
-    val category: String     // 分类名称
+    val id: String,              // 唯一标识
+    val displayText: String,     // 显示文本
+    val insertText: String,      // 插入文本
+    val imageUrl: String?,       // 图片 URL（本地路径或网络 URL）
+    val category: String,        // 分类名称
+    val displayConfig: EmojiDisplayConfig? = null  // 显示配置（可选）
 )
 ```
 
-### PluginIcon
+> ⚠️ **重要**：`EmojiItem` 有 6 个字段！本地定义插件 API 接口时，**必须完整包含 `displayConfig` 字段**，否则运行时宿主应用会报 `NoSuchMethodError`。这是因为宿主应用的 `EmojiItem` 已包含该字段，而插件编译时使用本地定义，运行时由宿主类加载器加载，构造函数签名必须一致。
+
+### EmojiPlugin 接口
 
 ```kotlin
+interface EmojiPlugin : IPluginEntryClass {
+    override fun onLoad(context: PluginContext)
+    override fun onUnload()
+    
+    suspend fun getEmojis(category: String?, searchText: String?, topK: Int): List<EmojiItem>
+    suspend fun getCategories(): List<String>
+    
+    // 可选：自定义分类布局
+    suspend fun getCategoryLayoutConfig(category: String): CategoryLayoutConfig? = null
+    
+    // 可选：插件图标
+    fun getIcon(): PluginIcon? = null
+    
+    override fun hasSettings(): Boolean = false
+    override fun openSettings(context: Context) {}
+}
+
+data class CategoryLayoutConfig(
+    val columns: Int = 8,
+    val itemHeightDp: Int = 40
+)
+
 data class PluginIcon(
-    val text: String? = null,    // 表情符号文本（如 "🐰"）
-    val assetName: String? = null // assets 中的图标文件名（如 "icon.png"）
+    val text: String? = null,      // 表情符号文本（如 "🐰"）
+    val assetName: String? = null  // assets 中的图标文件名（如 "icon.png"）
 )
 ```
 
-插件图标两种方式：
-1. **文本图标**：`PluginIcon(text = "🐰")`
-2. **图片图标**：`PluginIcon(assetName = "icon.webp")` - 将图标放在 `assets/icon.webp`
+### PluginIcon 使用说明
 
-主应用自动从插件 APK 提取图片图标。
+插件图标有两种方式：
 
-### PluginContext
+1. **文本图标**：`PluginIcon(text = "🐰")` — 简单可靠，推荐
+2. **图片图标**：`PluginIcon(assetName = "icon.png")` — 图片放在 `assets/icon.png`
+
+> ⚠️ **重要**：`assetName` **不能包含路径分隔符**（如 `emojis/icon.png`）！
+> 宿主应用的 `ExtensionManager.extractPluginIcon()` 在提取图标时，会将 assetName 拼接为路径
+> `plugin_icons/{pluginId}_{assetName}`，如果包含 `/` 会产生子目录，但宿主未创建父目录，
+> 导致 `FileNotFoundException`。**请始终将图标文件放在 `assets/` 根目录，使用纯文件名**。
+
+### PluginContext 及其他模型
 
 ```kotlin
 data class PluginContext(
     val application: Application,    // 宿主 Application
     val pluginInfo: PluginInfo,      // 插件信息
-    val dataDir: File                // 插件数据目录
+    val pluginId: String = pluginInfo.id
+) {
+    // 注意：无 dataDir 字段，需要文件操作时使用 application.filesDir
+}
+
+data class PluginInfo(
+    val id: String,                  // 插件 ID（即 applicationId）
+    val name: String,
+    val iconResId: Int,
+    val versionCode: Long,
+    val versionName: String,
+    val path: String,                // 插件 APK 文件路径
+    val entryClass: String,          // 入口类完整类名
+    val description: String,
+    val type: String = "unknown",
+    val enabled: Boolean = true,
+    val installTime: Long = System.currentTimeMillis(),
+    val nativeLibPath: String? = null,
+    val providers: List<ProviderInfo> = emptyList()
 )
 ```
 
@@ -427,10 +493,58 @@ adb install my-plugin/build/outputs/apk/debug/my-plugin-xxx.apk
 **原因**：
 - `getEmojis()` 返回空列表
 - 主应用未启用插件
+- 插件 APK 更新后宿主仍使用旧缓存
 
 **解决**：
 - 检查 `loadEmojis()` 实现
 - 在主应用设置中启用插件
+- 更新插件时务必递增 `versionCode`（见下方说明）
+
+### 5. NoSuchMethodError（EmojiItem 构造函数不匹配）
+
+```
+java.lang.NoSuchMethodError: No direct method <init>
+(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;
+Ljava/lang/String;Ljava/lang/String;)V
+in class Lcom/kingzcheung/xime/plugin/core/api/EmojiItem;
+```
+
+**原因**：插件本地定义的 `EmojiItem` 与宿主应用的版本不同。
+宿主应用的 `EmojiItem` 包含 6 个字段（含 `displayConfig`），
+如果本地只定义 5 个字段，编译时生成 5 参数构造器调用，
+运行时宿主类加载器找不到匹配的构造器。
+
+**解决**：确保本地 API 接口定义与宿主 `plugin-core` 源码一致。
+
+```kotlin
+// 正确：6 个字段
+data class EmojiItem(
+    val id: String,
+    val displayText: String,
+    val insertText: String,
+    val imageUrl: String?,
+    val category: String,
+    val displayConfig: EmojiDisplayConfig? = null  // 别忘了这个！
+)
+```
+
+### 6. 插件更新后不生效（缓存问题）
+
+**原因**：`PluginManager` 在 `installPlugin()` 中将插件 APK 复制到
+宿主数据目录（`files/plugins/{pluginId}/base.apk`）。如果 `versionCode` 未递增，
+宿主认为无需更新，继续使用旧缓存。
+
+**解决**：
+- 每次更新插件时 **必须递增 `versionCode`**
+- 或者先卸载再安装：`adb uninstall` + `adb install`
+- 调试时可在宿主应用中清除插件数据
+
+```bash
+# 彻底重装（推荐调试用）
+adb uninstall com.example.plugin.myplugin
+adb install app/build/outputs/apk/debug/my-plugin.apk
+# 然后重启宿主应用
+```
 
 ## 现有插件示例
 
