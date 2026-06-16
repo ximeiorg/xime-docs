@@ -81,7 +81,7 @@
 | 雾凇拼音 | [rime-ice](https://github.com/iDvel/rime-ice) | ✅ 完全支持 | 完整方案包，含子目录结构（`cn_dicts/`、`en_dicts/`、`opencc/`），可直接导入 |
 | 万象拼音（基础版） | [amzxyz/rime-wanxiang](https://github.com/amzxyz/rime-wanxiang) | ✅ 完全支持 | 下载 Release 中的 `rime-wanxiang-基础版.zip` 还有必须的大模型语法包 (必装组件)，必须重新解压，把大模型语法包放入根目录，再重新打包！|
 | 朙月拼音 | [rime/rime-luna-pinyin](https://github.com/rime/rime-luna-pinyin) | ✅ 完全支持 | 标准 Rime 方案包，直接导入 `.zip` 即可使用 |
-| 宇浩输入法方案 | [forfudan/yuhao-ime-release](https://github.com/forfudan/yuhao-ime-release) | ❌ 不支持 | 方案包结构不符合本应用的导入规范，需要自行处理后再导入 |
+| 宇浩输入法方案 | [forfudan/yuhao-ime-release](https://github.com/forfudan/yuhao-ime-release) | ✅ 支持 | 方案包结构不符合本应用的导入规范，需要自行处理后再导入 |
 | 郑码 | [chen32768/zhengma_for_rime](https://github.com/chen32768/zhengma_for_rime) | ✅ 完全支持 | 标准 Rime 方案包，下载 Release 中的 `zhengma_for_rime.zip` 直接导入即可 |
 
 > 注：不在上表中的方案不代表不支持，只要方案包格式符合[兼容性说明](#兼容性说明)的要求均可正常导入使用。
