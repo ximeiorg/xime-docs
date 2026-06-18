@@ -1,6 +1,6 @@
 # 全键盘配置教程
 
-> **版本要求**：此功能需要 Xime **v2.4.0 及以上版本**，旧版本不支持自定义配置文件。
+> **版本要求**：此功能需要 Xime **v2.4.0 及以上版本**，旧版本不支持 `tap.label` 键帽显示。
 
 Xime 支持通过 `xime.custom.yaml` 配置文件自定义全键盘的按键布局、手势、配色和样式。以下详细介绍各配置字段的含义。
 
@@ -21,12 +21,13 @@ Xime 支持通过 `xime.custom.yaml` 配置文件自定义全键盘的按键布�
 ## 配置文件结构总览
 
 ```yaml
-customization:        # 版本信息（自动生成，无需手动修改）
-  distribution_code_name: Xime
-  distribution_version: 0.13.3
+metadata:             # 元数据（配置文件的描述信息）
+  app_name: Xime
+  app_version: ">=2.4.0"
+  platform: android
+  config_version: 1
   generator: "Xime"
-  modified_time: "2026-06-09"
-  rime_version: 0.14.3
+  modified_time: "2026-06-18"
 
 xime_index:           # 方案/插件/模型市场索引
   base_urls: [...]   # 下载源地址列表
@@ -44,6 +45,33 @@ keyboard:             # 键盘按键配置
     q: { tap: "q", swipe_up: "1", swipe_down: {...}, long_press: {...} }
     # ...
 ```
+
+---
+
+## `metadata` — 配置元数据
+
+配置文件的基础信息，用于版本兼容性校验和来源追踪。
+
+```yaml
+metadata:
+  app_name: Xime
+  app_version: ">=2.4.0"
+  platform: android
+  config_version: 1
+  generator: "Xime"
+  modified_time: "2026-06-18"
+```
+
+### 字段说明
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `app_name` | 字符串 | 应用名称，固定为 `Xime` |
+| `app_version` | 字符串 | 版本约束（语义化版本范围），如 `">=2.4.0"`。配置文件加载时校验当前 APP 版本是否满足约束，不满足时仅警告不影响加载 |
+| `platform` | 字符串 | 目标平台，可选 `android` / `windows` / `linux`。用于跨平台配置管理 |
+| `config_version` | 整数 | 配置文件格式版本，递增表示配置结构有破坏性变更。当前为 `1` |
+| `generator` | 字符串 | 生成配置的工具名称，如 `"Xime"`、`"Xime Settings Browser Import"` |
+| `modified_time` | 字符串 | 最后修改时间 |
 
 ---
 
@@ -326,12 +354,13 @@ swipe_down:
 ### 完整全键盘配置
 
 ```yaml
-customization:
-  distribution_code_name: Xime
-  distribution_version: 0.13.3
+metadata:
+  app_name: Xime
+  app_version: ">=2.4.0"
+  platform: android
+  config_version: 1
   generator: "Xime"
-  modified_time: "2026-06-09"
-  rime_version: 0.14.3
+  modified_time: "2026-06-18"
 
 xime_index:
   # 方案/插件/模型市场索引端点（ximeiorg/xime-index）。
