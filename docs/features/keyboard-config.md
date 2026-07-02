@@ -1,12 +1,8 @@
 # 全键盘配置教程
 
-
-
 **注意: 此功能不做兼容性保证！如果你发现你的配置不生效了，有可能是因为app主做相关的改动，请回来看文档，再做修改！！！**
 
-
-
-> **版本要求**：此功能需要 Xime **v2.4.0 及以上版本**，旧版本不支持 `tap.label` 键帽显示。
+> **版本要求**：此功能需要 Xime **v2.5.0 及以上版本**，旧版本不支持自定义配置文件。
 
 Xime 支持通过 `xime.custom.yaml` 配置文件自定义全键盘的按键布局、手势、配色和样式。以下详细介绍各配置字段的含义。
 
@@ -27,12 +23,12 @@ Xime 支持通过 `xime.custom.yaml` 配置文件自定义全键盘的按键布�
 ## 配置文件结构总览
 
 ```yaml
-metadata:             # 元数据（配置文件的描述信息）
+metadata:             # 版本信息（自动生成，无需手动修改）
   app_name: Xime
-  app_version: ">=2.4.0"
+  app_version: ">=2.5.0"
   platform: android
   config_version: 1
-  generator: "Xime"
+  generator: "Xime Config Generator"
   modified_time: "2026-06-18"
 
 xime_index:           # 方案/插件/模型市场索引
@@ -46,10 +42,22 @@ color_schemes:        # 配色方案定义
     name: "薰衣草紫"
     primary_color: 0x8F73E2
 
-keyboard:             # 键盘按键配置
-  keys:
-    q: { tap: "q", swipe_up: "1", swipe_down: {...}, long_press: {...} }
+keyboard:             # 键盘配置
+  colors:             # 键盘颜色（可选）
+    keyboard_bg_color: 0xE3E4E8
     # ...
+  shadow:             # 按键阴影（可选）
+    enabled: true
+    elevation: 1
+    shape_radius: 8
+  qwerty:             # 中文键盘按键
+    keys:
+      q: { tap: "q", swipe_up: "1", swipe_down: {...}, long_press: {...} }
+      # ...
+  qwerty_en:          # 英文键盘按键
+    keys:
+      q: { tap: "q", swipe_up: "1", long_press: {...} }
+      # ...
 ```
 
 ---
@@ -86,8 +94,8 @@ metadata:
 ```yaml
 xime_index:
   base_urls:
-    - "https://cdn.jsdelivr.net/gh/ximeiorg/xime-index/"
-    - "https://fastly.jsdelivr.net/gh/ximeiorg/xime-index/"
+    - "https://cdn.jsdelivr.net/gh/ximeiorg/xime-index@master/"
+    - "https://fastly.jsdelivr.net/gh/ximeiorg/xime-index@master/"
     - "https://index.ximei.me/"
     - "https://raw.githubusercontent.com/ximeiorg/xime-index/refs/heads/main/"
 ```
@@ -102,13 +110,23 @@ xime_index:
 
 ```yaml
 style:
+  font_size: 14            # 候选词字体大小（单位：sp，手机端无效）
+  candidate_count: 5       # 候选栏显示的候选词数量（手机端无效）
+  show_code_hint: true     # 是否在候选词右上角显示编码提示（手机端无效）
+  horizontal: true         # 候选栏是否水平排列（手机端无效）
   color_scheme: lavender_purple  # 使用的配色方案名称（对应 color_schemes 中的键名）
 ```
+
+> `font_size`、`candidate_count`、`show_code_hint`、`horizontal` 仅在 PC 端生效，手机端无效。
 
 ### 字段说明
 
 | 字段 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
+| `font_size` | 整数 | `14` | 候选栏文字的字号，单位 sp（仅 PC） |
+| `candidate_count` | 整数 | `5` | 候选栏同时显示的候选词数量（仅 PC） |
+| `show_code_hint` | 布尔 | `true` | `true` 时在候选词右上角显示对应的五笔编码（仅 PC） |
+| `horizontal` | 布尔 | `true` | `true` 为横向滚动候选栏，`false` 为纵向排列（仅 PC） |
 | `color_scheme` | 字符串 | `"lavender_purple"` | 引用 `color_schemes` 中定义的配色键名 |
 
 ---
@@ -162,8 +180,76 @@ color_schemes:
 
 > `primary_color` 中的 AA 为 Alpha 通道（透明度），可省略（省略时默认为完全不透明）。
 
-> 更多配色示例可参考内置的示例文件，其中展示了银灰、中灰、烟灰、墨灰等不同灰度的配色方案
+---
+
+## `keyboard` — 键盘配置
+
+`keyboard` 包含四个子部分：
+
+| 子项 | 说明 |
+|------|------|
+| `colors` | 键盘颜色配置（可选） |
+| `shadow` | 按键阴影配置（可选） |
+| `qwerty` | 中文键盘（26 键）按键定义 |
+| `qwerty_en` | 英文键盘（26 键）按键定义 |
+
+### `keyboard.colors` — 键盘颜色
+
+可选，不设置则使用内置默认值。
+
+```yaml
+keyboard:
+  colors:
+    keyboard_bg_color: 0xE3E4E8           # 键盘背景色（亮色）
+    keyboard_bg_color_dark: 0x202020      # 键盘背景色（暗色）
+    key_bg_color: 0xFFFFFF                # 按键背景色（亮色）
+    key_bg_color_dark: 0x4A4A4A           # 按键背景色（暗色）
+    special_key_bg_color: 0x8F73E2        # 特殊按键背景色（亮色，不设置时默认取主题色）
+    special_key_bg_color_dark: 0x4A4A4A   # 特殊按键背景色（暗色，不设置时默认取主题色）
+    candidate_bar_bg_color: 0xE3E4E8      # 候选栏背景色（亮色）
+    candidate_bar_bg_color_dark: 0x202020 # 候选栏背景色（暗色）
+    key_text_color: 0x202124              # 按键文字颜色（亮色）
+    key_text_color_dark: 0xE8EAED         # 按键文字颜色（暗色）
+    candidate_text_color: 0x202124        # 候选文字颜色（亮色）
+    candidate_text_color_dark: 0xE8EAED   # 候选文字颜色（暗色）
 ```
+
+#### 字段说明
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `keyboard_bg_color` | 十六进制 | 键盘背景色（亮色主题） |
+| `keyboard_bg_color_dark` | 十六进制 | 键盘背景色（暗色主题） |
+| `key_bg_color` | 十六进制 | 普通按键背景色（亮色主题） |
+| `key_bg_color_dark` | 十六进制 | 普通按键背景色（暗色主题） |
+| `special_key_bg_color` | 十六进制 | 特殊按键（如 Shift）背景色（亮色主题，不设置时默认取主题色） |
+| `special_key_bg_color_dark` | 十六进制 | 特殊按键背景色（暗色主题，不设置时默认取主题色） |
+| `candidate_bar_bg_color` | 十六进制 | 候选栏背景色（亮色主题） |
+| `candidate_bar_bg_color_dark` | 十六进制 | 候选栏背景色（暗色主题） |
+| `key_text_color` | 十六进制 | 按键文字颜色（亮色主题） |
+| `key_text_color_dark` | 十六进制 | 按键文字颜色（暗色主题） |
+| `candidate_text_color` | 十六进制 | 候选文字颜色（亮色主题） |
+| `candidate_text_color_dark` | 十六进制 | 候选文字颜色（暗色主题） |
+
+### `keyboard.shadow` — 按键阴影
+
+可选，不设置则使用默认值。
+
+```yaml
+keyboard:
+  shadow:
+    enabled: true        # 是否启用阴影
+    elevation: 1         # 阴影高度（dp，默认 1）
+    shape_radius: 8      # 阴影圆角半径（dp，默认 8）
+```
+
+#### 字段说明
+
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `enabled` | 布尔 | `true` | 是否启用按键阴影 |
+| `elevation` | 整数 | `1` | 阴影高度，单位 dp |
+| `shape_radius` | 整数 | `8` | 阴影圆角半径，单位 dp |
 
 ---
 
@@ -238,7 +324,7 @@ keyboard:
 
 ## `keyboard.keys` — 键盘按键配置
 
-这是全键盘配置的核心部分，每个按键可以定义 4 种手势操作。
+这是全键盘配置的核心部分，每个按键可以定义 4 种手势操作。`qwerty` 对应中文 26 键键盘，`qwerty_en` 对应英文 26 键键盘。
 
 ### 手势类型
 
@@ -251,7 +337,7 @@ keyboard:
 
 ### 手势值格式
 
-每个手势的值有两种格式：
+每个手势的值有三种格式：
 
 #### 1. 字符串简写
 
@@ -261,7 +347,7 @@ keyboard:
 q: { tap: "q" }
 ```
 
-#### 2. 对象格式
+#### 2. 对象格式（label + action + value）
 
 ```yaml
 q: { tap: { label: "Q", action: "commit", value: "q" } }
@@ -274,11 +360,25 @@ q: { tap: { label: "Q", action: "commit", value: "q" } }
 | `value` | 字符串 | 否 | 上屏时的输出文本，不指定则用 `label` |
 | `display` | 字符串 | 否 | 显示模式，仅 `swipe_down` 和 `long_press` 支持 |
 
-#### 3. 动作类型（action）
+#### 3. 对象格式（label + value，仅用于 swipe_up）
+
+上滑符号可使用独立于 label 的 value，用于在按键上显示中文符号但上屏英文符号：
+
+```yaml
+a: { tap: "a", swipe_up: { label: "～", value: "~" } }
+```
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `label` | 字符串 | 是 | 按键上显示的文字 |
+| `value` | 字符串 | 是 | 上屏时的输出文本 |
+
+#### 4. 动作类型（action）
 
 | 动作 | 说明 |
 |------|------|
 | `commit` | 上屏文字（`value` 指定上屏内容，不指定则用 `label`） |
+| `toggle_ascii` | 中/英输入模式切换 |
 | `command` | 执行内置命令（`value` 指定命令名） |
 | `select_all` | 全选当前输入框中的文本 |
 | `copy` | 复制选中的文本 |
@@ -290,7 +390,7 @@ q: { tap: { label: "Q", action: "commit", value: "q" } }
 | `none` | 无动作，仅用于显示（如显示五笔字根） |
 | `repeat` | 重复上一次输入 |
 
-#### 4. 内置命令（command）
+#### 5. 内置命令（command）
 
 当 `action` 为 `command` 时，`value` 支持以下命令：
 
@@ -298,7 +398,7 @@ q: { tap: { label: "Q", action: "commit", value: "q" } }
 |------|------|
 | `clear_composition` | 清空当前输入编码和候选词 |
 
-#### 5. 显示模式（display）
+#### 6. 显示模式（display）
 
 仅 `swipe_down` 和 `long_press` 支持：
 
@@ -353,6 +453,30 @@ swipe_down:
 
 ---
 
+### 逗号键
+
+逗号键使用单引号 `'` 作为键名：
+
+```yaml
+"'": { tap: { label: "，", value: "," }, swipe_up: { label: "。", value: "." } }
+```
+
+`label` 为按键上显示的中文符号，`value` 为上屏时的实际符号。
+
+### 中/英切换键
+
+使用键名 `shift_l`，通过 `toggle_ascii` 动作切换中英文输入模式：
+
+```yaml
+# 中文键盘：按键显示"英"，点击切换到英文模式
+shift_l: { tap: { label: "英", action: "toggle_ascii" } }
+
+# 英文键盘：按键显示"中"，点击切换到中文模式
+shift_l: { tap: { label: "中", action: "toggle_ascii" } }
+```
+
+---
+
 ## 参考示例
 
 应用内置了以下示例 YAML 文件，可作为自定义配置的参考：
@@ -385,36 +509,36 @@ color_schemes:
   lavender_purple:
     name: "薰衣草紫"
     primary_color: 0x8F73E2
-  
+
   ocean_blue:
     name: "海洋蔚蓝"
     primary_color: 0x1A73E8
-  
+
   forest_green:
     name: "森林翠绿"
     primary_color: 0x2E7D32
-  
+
   sunset_orange:
     name: "落日橙光"
     primary_color: 0xE65100
-  
+
   coral_red:
     name: "珊瑚绯红"
     primary_color: 0xC62828
-  
+
   slate_gray:
     name: "沉稳石墨"
     primary_color: 0x424242
-  
+
   rose_pink:
     name: "浪漫玫瑰"
     primary_color: 0xAD1457
-  
+
   teal_cyan:
     name: "青碧如水"
     primary_color: 0x00796B
 
-keyboard:
+## `keyboard.qwerty` / `keyboard.qwerty_en` — 键盘按键配置
   colors:
     keyboard_bg_color: 0xE3E4E8
     keyboard_bg_color_dark: 0x202020
@@ -473,7 +597,7 @@ keyboard:
 
 ### 快捷键方案
 
-将第三行按键的下滑手势替换为文本编辑快捷键：
+将中文键盘第三行按键的下滑手势替换为文本编辑快捷键，并为英文键盘也添加对应的快捷键：
 
 ```yaml
 style:
@@ -521,15 +645,15 @@ color_schemes:
   zine_light:
     name: "银灰 · 浅"
     primary_color: 0x9E9E9E
-  
+
   zine_medium:
     name: "中灰 · 中"
     primary_color: 0x616161
-  
+
   zine_dark:
     name: "烟灰 · 深"
     primary_color: 0x424242
-  
+
   zine_deep:
     name: "墨灰 · 浓"
     primary_color: 0x212121
@@ -539,42 +663,81 @@ color_schemes:
 
 ### 仓颉输入法的显示
 
+将字母按键的点按显示为对应的仓颉字根：
+
 ```yaml
 keyboard:
-  keys:
-    # ── 第一行 ──
-    # long_press 顺序：小写 → 大写 → 带变音符号的相似字母
-    # tap 显示对应的仓颉字根
-    q: { tap: { label: "手", action: "commit", value: "q" }, swipe_up: "1", long_press: { display: "bubble", values: ["q", "Q"] } }
-    w: { tap: { label: "田", action: "commit", value: "w" }, swipe_up: "2", long_press: { display: "bubble", values: ["w", "W"] } }
-    e: { tap: { label: "水", action: "commit", value: "e" }, swipe_up: "3", long_press: { display: "bubble", values: ["e", "E", "è", "é", "ê", "ë"] } }
-    r: { tap: { label: "口", action: "commit", value: "r" }, swipe_up: "4", long_press: { display: "bubble", values: ["r", "R"] } }
-    t: { tap: { label: "廿", action: "commit", value: "t" }, swipe_up: "5", long_press: { display: "bubble", values: ["t", "T"] } }
-    y: { tap: { label: "重", action: "commit", value: "y" }, swipe_up: "6", long_press: { display: "bubble", values: ["y", "Y", "ÿ"] } }
-    u: { tap: { label: "山", action: "commit", value: "u" }, swipe_up: "7", long_press: { display: "bubble", values: ["u", "U", "ù", "ú", "û", "ü"] } }
-    i: { tap: { label: "戈", action: "commit", value: "i" }, swipe_up: "8", long_press: { display: "bubble", values: ["i", "I", "ì", "í", "î", "ï"] } }
-    o: { tap: { label: "人", action: "commit", value: "o" }, swipe_up: "9", long_press: { display: "bubble", values: ["o", "O", "ò", "ó", "ô", "õ", "ö", "ø"] } }
-    p: { tap: { label: "心", action: "commit", value: "p" }, swipe_up: "0", long_press: { display: "bubble", values: ["p", "P"] } }
+  qwerty:
+    keys:
+      # ── 第一行 ──
+      # long_press 顺序：小写 → 大写 → 带变音符号的相似字母
+      # tap 显示对应的仓颉字根
+      q: { tap: { label: "手", action: "commit", value: "q" }, swipe_up: "1", long_press: { display: "bubble", values: ["q", "Q"] } }
+      w: { tap: { label: "田", action: "commit", value: "w" }, swipe_up: "2", long_press: { display: "bubble", values: ["w", "W"] } }
+      e: { tap: { label: "水", action: "commit", value: "e" }, swipe_up: "3", long_press: { display: "bubble", values: ["e", "E", "è", "é", "ê", "ë"] } }
+      r: { tap: { label: "口", action: "commit", value: "r" }, swipe_up: "4", long_press: { display: "bubble", values: ["r", "R"] } }
+      t: { tap: { label: "廿", action: "commit", value: "t" }, swipe_up: "5", long_press: { display: "bubble", values: ["t", "T"] } }
+      y: { tap: { label: "重", action: "commit", value: "y" }, swipe_up: "6", long_press: { display: "bubble", values: ["y", "Y", "ÿ"] } }
+      u: { tap: { label: "山", action: "commit", value: "u" }, swipe_up: "7", long_press: { display: "bubble", values: ["u", "U", "ù", "ú", "û", "ü"] } }
+      i: { tap: { label: "戈", action: "commit", value: "i" }, swipe_up: "8", long_press: { display: "bubble", values: ["i", "I", "ì", "í", "î", "ï"] } }
+      o: { tap: { label: "人", action: "commit", value: "o" }, swipe_up: "9", long_press: { display: "bubble", values: ["o", "O", "ò", "ó", "ô", "õ", "ö", "ø"] } }
+      p: { tap: { label: "心", action: "commit", value: "p" }, swipe_up: "0", long_press: { display: "bubble", values: ["p", "P"] } }
 
-    # ── 第二行 ──
-    a: { tap: { label: "日", action: "commit", value: "a" }, swipe_up: "~", long_press: { display: "bubble", values: ["a", "A", "à", "á", "â", "ã", "ä", "å", "æ"] } }
-    s: { tap: { label: "尸", action: "commit", value: "s" }, swipe_up: "/", long_press: { display: "bubble", values: ["s", "S", "ß"] } }
-    d: { tap: { label: "木", action: "commit", value: "d" }, swipe_up: "：", long_press: { display: "bubble", values: ["d", "D"] } }
-    f: { tap: { label: "火", action: "commit", value: "f" }, swipe_up: "；", long_press: { display: "bubble", values: ["f", "F"] } }
-    g: { tap: { label: "土", action: "commit", value: "g" }, swipe_up: "“", long_press: { display: "bubble", values: ["g", "G"] } }
-    h: { tap: { label: "竹", action: "commit", value: "h" }, swipe_up: "”", long_press: { display: "bubble", values: ["h", "H"] } }
-    j: { tap: { label: "十", action: "commit", value: "j" }, swipe_up: "-", long_press: { display: "bubble", values: ["j", "J"] } }
-    k: { tap: { label: "大", action: "commit", value: "k" }, swipe_up: "（", long_press: { display: "bubble", values: ["k", "K"] } }
-    l: { tap: { label: "中", action: "commit", value: "l" }, swipe_up: "）", long_press: { display: "bubble", values: ["l", "L"] } }
+      # ── 第二行 ──
+      a: { tap: { label: "日", action: "commit", value: "a" }, swipe_up: "~", long_press: { display: "bubble", values: ["a", "A", "à", "á", "â", "ã", "ä", "å", "æ"] } }
+      s: { tap: { label: "尸", action: "commit", value: "s" }, swipe_up: "/", long_press: { display: "bubble", values: ["s", "S", "ß"] } }
+      d: { tap: { label: "木", action: "commit", value: "d" }, swipe_up: "：", long_press: { display: "bubble", values: ["d", "D"] } }
+      f: { tap: { label: "火", action: "commit", value: "f" }, swipe_up: "；", long_press: { display: "bubble", values: ["f", "F"] } }
+      g: { tap: { label: "土", action: "commit", value: "g" }, swipe_up: "“", long_press: { display: "bubble", values: ["g", "G"] } }
+      h: { tap: { label: "竹", action: "commit", value: "h" }, swipe_up: "”", long_press: { display: "bubble", values: ["h", "H"] } }
+      j: { tap: { label: "十", action: "commit", value: "j" }, swipe_up: "-", long_press: { display: "bubble", values: ["j", "J"] } }
+      k: { tap: { label: "大", action: "commit", value: "k" }, swipe_up: "（", long_press: { display: "bubble", values: ["k", "K"] } }
+      l: { tap: { label: "中", action: "commit", value: "l" }, swipe_up: "）", long_press: { display: "bubble", values: ["l", "L"] } }
 
-    # ── 第三行 ──
-    z: { tap: { label: "難", action: "commit", value: "z" }, swipe_up: "*", long_press: { display: "bubble", values: [ "z","Z"] } }
-    x: { tap: { label: "卜", action: "commit", value: "x" }, swipe_up: "@", long_press: { display: "bubble", values: ["x", "X"] } }
-    c: { tap: { label: "金", action: "commit", value: "c" }, swipe_up: "、", long_press: { display: "bubble", values: ["c", "C", "ç"] } }
-    v: { tap: { label: "女", action: "commit", value: "v" }, swipe_up: "？", long_press: { display: "bubble", values: ["v", "V"] } }
-    b: { tap: { label: "月", action: "commit", value: "b" }, swipe_up: "！", long_press: { display: "bubble", values: ["b", "B"] } }
-    n: { tap: { label: "弓", action: "commit", value: "n" }, swipe_up: ".", long_press: { display: "bubble", values: ["n", "N", "ñ"] } }
-    m: { tap: { label: "一", action: "commit", value: "m" }, swipe_up: "#", long_press: { display: "bubble", values: ["m", "M"] } }
+      # ── 第三行 ──
+      z: { tap: { label: "*", action: "commit", value: "z" }, swipe_up: "*", long_press: { display: "bubble", values: ["z", "Z"] } }
+      x: { tap: { label: "難", action: "commit", value: "x" }, swipe_up: "@", long_press: { display: "bubble", values: ["x", "X"] } }
+      c: { tap: { label: "金", action: "commit", value: "c" }, swipe_up: "、", long_press: { display: "bubble", values: ["c", "C", "ç"] } }
+      v: { tap: { label: "女", action: "commit", value: "v" }, swipe_up: "？", long_press: { display: "bubble", values: ["v", "V"] } }
+      b: { tap: { label: "月", action: "commit", value: "b" }, swipe_up: "！", long_press: { display: "bubble", values: ["b", "B"] } }
+      n: { tap: { label: "弓", action: "commit", value: "n" }, swipe_up: ".", long_press: { display: "bubble", values: ["n", "N", "ñ"] } }
+      m: { tap: { label: "一", action: "commit", value: "m" }, swipe_up: "#", long_press: { display: "bubble", values: ["m", "M"] } }
+
+  qwerty_en:
+    keys:
+      # ── 第一行 ──
+      q: { tap: "q", swipe_up: "1", long_press: { display: "bubble", values: ["q", "Q"] } }
+      w: { tap: "w", swipe_up: "2", long_press: { display: "bubble", values: ["w", "W"] } }
+      e: { tap: "e", swipe_up: "3", long_press: { display: "bubble", values: ["e", "E"] } }
+      r: { tap: "r", swipe_up: "4", long_press: { display: "bubble", values: ["r", "R"] } }
+      t: { tap: "t", swipe_up: "5", long_press: { display: "bubble", values: ["t", "T"] } }
+      y: { tap: "y", swipe_up: "6", long_press: { display: "bubble", values: ["y", "Y"] } }
+      u: { tap: "u", swipe_up: "7", long_press: { display: "bubble", values: ["u", "U"] } }
+      i: { tap: "i", swipe_up: "8", long_press: { display: "bubble", values: ["i", "I"] } }
+      o: { tap: "o", swipe_up: "9", long_press: { display: "bubble", values: ["o", "O"] } }
+      p: { tap: "p", swipe_up: "0", long_press: { display: "bubble", values: ["p", "P"] } }
+      # ── 第二行 ──
+      a: { tap: "a", swipe_up: "~", long_press: { display: "bubble", values: ["a", "A"] } }
+      s: { tap: "s", swipe_up: "/", long_press: { display: "bubble", values: ["s", "S"] } }
+      d: { tap: "d", swipe_up: ":", long_press: { display: "bubble", values: ["d", "D"] } }
+      f: { tap: "f", swipe_up: ";", long_press: { display: "bubble", values: ["f", "F"] } }
+      g: { tap: "g", swipe_up: "\"", long_press: { display: "bubble", values: ["g", "G"] } }
+      h: { tap: "h", swipe_up: "\"", long_press: { display: "bubble", values: ["h", "H"] } }
+      j: { tap: "j", swipe_up: "-", long_press: { display: "bubble", values: ["j", "J"] } }
+      k: { tap: "k", swipe_up: "(", long_press: { display: "bubble", values: ["k", "K"] } }
+      l: { tap: "l", swipe_up: ")", long_press: { display: "bubble", values: ["l", "L"] } }
+      # ── 第三行 ──
+      z: { tap: "z", swipe_up: "*", long_press: { display: "bubble", values: ["z", "Z"] } }
+      x: { tap: "x", swipe_up: "@", long_press: { display: "bubble", values: ["x", "X"] } }
+      c: { tap: "c", swipe_up: "、", long_press: { display: "bubble", values: ["c", "C"] } }
+      v: { tap: "v", swipe_up: "?", long_press: { display: "bubble", values: ["v", "V"] } }
+      b: { tap: "b", swipe_up: "!", long_press: { display: "bubble", values: ["b", "B"] } }
+      n: { tap: "n", swipe_up: "%", long_press: { display: "bubble", values: ["n", "N"] } }
+      m: { tap: "m", swipe_up: "#", long_press: { display: "bubble", values: ["m", "M"] } }
+      # 逗号键
+      "'": { tap: { label: ",", value: "," }, swipe_up: { label: ".", value: "." } }
+      # 中/英切换键
+      shift_l: { tap: { label: "中", action: "toggle_ascii" } }
 ```
 
 ![cangjie](./adv/cangjie.jpg)
