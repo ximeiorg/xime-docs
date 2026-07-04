@@ -34,6 +34,7 @@ export default defineConfig({
           text: '方案与词库',
           items: [
             { text: '输入方案', link: '/features/input-scheme' },
+            { text: '词库管理', link: '/features/dictionary' },
             { text: '部署方案', link: '/features/deployment' }
           ]
         },
@@ -47,7 +48,8 @@ export default defineConfig({
           text: '智能与扩展',
           items: [
             { text: '智能联想', link: '/features/smart-prediction' },
-            { text: '语音转文本', link: '/features/speech-to-text' }
+            { text: '语音转文本', link: '/features/speech-to-text' },
+            { text: '插件管理', link: '/plugins/' }
           ]
         },
         {
@@ -57,27 +59,22 @@ export default defineConfig({
           ]
         },
         {
-          text: '其他功能',
+          text: '工具',
           items: [
             { text: '剪贴板', link: '/features/clipboard' },
             { text: '快捷发送', link: '/features/quick-send' },
             { text: '表情', link: '/features/emoji' },
             { text: '计算器', link: '/features/calculator' },
+            { text: '手写输入', link: '/features/handwriting' },
             { text: '工具栏自定义', link: '/features/toolbar' },
-    
+            { text: '键盘配置自定义', link: '/features/keyboard-config' }
           ]
         },
         {
-          text: '插件',
+          text: '关于',
           items: [
-            { text: '插件列表', link: '/plugins/' },
-            { text: '开发指南', link: '/plugins/PLUGIN_DEVELOPMENT_GUIDE' },
+            { text: '插件开发指南', link: '/plugins/PLUGIN_DEVELOPMENT_GUIDE' },
             { text: '测试指南', link: '/plugins/TESTING' }
-          ]
-        },{
-          text:'高级设置',
-          items: [
-            {text:"键盘配置自定义", link: '/features/keyboard-config'},
           ]
         }
       ]
