@@ -2,7 +2,7 @@
 
 **注意: 此功能不做兼容性保证！如果你发现你的配置不生效了，有可能是因为app主做相关的改动，请回来看文档，再做修改！！！**
 
-> **版本要求**：此功能需要 Xime **v2.5.0 及以上版本**，旧版本不支持自定义配置文件。
+> **版本要求**：此功能需要 Xime **v2.5.0 及以上版本**（`button_layout` 需要 **v2.5.0-beta10 及以上版本**），旧版本不支持自定义配置文件。
 
 Xime 支持通过 `xime.custom.yaml` 配置文件自定义全键盘的按键布局、手势、配色和样式。以下详细介绍各配置字段的含义。
 
@@ -192,6 +192,37 @@ color_schemes:
 | `shadow` | 按键阴影配置（可选） |
 | `qwerty` | 中文键盘（26 键）按键定义 |
 | `qwerty_en` | 英文键盘（26 键）按键定义 |
+
+### `keyboard.qwerty.button_layout` — 按键布局模式（v2.5.0-beta10+）
+
+> **版本要求**：此功能需要 Xime **v2.5.0-beta10 及以上版本**。
+
+用于切换中文键盘按键的内部布局方式，适合不同的显示需求。
+
+```yaml
+keyboard:
+  qwerty:
+    button_layout: compact    # 中文键盘使用紧凑布局
+```
+
+| 值 | 说明 |
+|------|------|
+| `standard` | 默认布局：主文字居中，下滑提示在按键底部显示（默认值） |
+| `compact` | 紧凑布局：主文字在左上角，上滑提示在右上角，下滑提示占满按键右侧剩余空间，支持多行显示 |
+
+**示例效果：**
+
+| 五笔字根（standard 布局 + display: bubble） | 小鹤双拼韵母（compact 布局 + display: key） |
+|------|------|
+| ![五笔字根](../public/Screenshot/五笔字根.png) | ![小鹤双拼](../public/Screenshot/小鹤双拼.png) |
+
+`qwerty_en` 也支持同样的配置：
+
+```yaml
+keyboard:
+  qwerty_en:
+    button_layout: compact    # 英文键盘也使用紧凑布局
+```
 
 ### `keyboard.colors` — 键盘颜色
 
@@ -405,7 +436,7 @@ a: { tap: "a", swipe_up: { label: "～", value: "~" } }
 | 模式 | 值 | 说明 |
 |------|------|------|
 | 气泡显示 | `"bubble"` | 下滑或长按时以气泡弹出显示内容，不占用按键空间 |
-| 按键显示 | `"key"` | 直接在按键上显示文字（最多显示 2 个字符） |
+| 按键显示 | `"key"` | 直接在按键上显示文字（配合 `compact` 布局时显示在按键右下方，支持多行） |
 
 ---
 
@@ -479,7 +510,20 @@ shift_l: { tap: { label: "中", action: "toggle_ascii" } }
 
 ## 参考示例
 
-应用内置了以下示例 YAML 文件，可作为自定义配置的参考：
+应用源码的 [`docs/config_examples/`](https://github.com/kingzcheung/Xime/tree/main/docs/config_examples) 目录下提供了多种场景的独立示例 YAML 文件，可直接下载使用或作为自定义配置的参考：
+
+| 文件 | 说明 |
+|------|------|
+| [`xime.full_example.yaml`](https://github.com/kingzcheung/Xime/blob/main/docs/config_examples/xime.full_example.yaml) | 完整全键盘配置（含所有手势、配色、阴影） |
+| [`xime.wubi_compact.yaml`](https://github.com/kingzcheung/Xime/blob/main/docs/config_examples/xime.wubi_compact.yaml) | 五笔字根 + compact 布局示例 |
+| [`xime.flypy.yaml`](https://github.com/kingzcheung/Xime/blob/main/docs/config_examples/xime.flypy.yaml) | 小鹤双拼韵母提示示例 |
+| [`xime.cangjie.yaml`](https://github.com/kingzcheung/Xime/blob/main/docs/config_examples/xime.cangjie.yaml) | 仓颉输入法按键配置示例 |
+| [`xime.shortcut.yaml`](https://github.com/kingzcheung/Xime/blob/main/docs/config_examples/xime.shortcut.yaml) | 快捷操作按键配置示例 |
+| [`xime.theme_example.yaml`](https://github.com/kingzcheung/Xime/blob/main/docs/config_examples/xime.theme_example.yaml) | 主题配色自定义示例 |
+
+你可以在浏览器中打开这些文件，将内容复制到 `xime.custom.yaml` 中，或直接点击 `Raw` 按钮下载原始文件后通过"浏览器导入"上传。
+
+---
 
 ### 完整全键盘配置
 
