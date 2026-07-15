@@ -46,10 +46,11 @@ keyboard:             # 键盘配置
   colors:             # 键盘颜色（可选）
     keyboard_bg_color: 0xE3E4E8
     # ...
+  key:                # 按键样式（可选，v2.5.0+）
+    corner_radius: 8
   shadow:             # 按键阴影（可选）
     enabled: true
     elevation: 1
-    shape_radius: 8
   qwerty:             # 中文键盘按键
     keys:
       q: { tap: "q", swipe_up: "1", swipe_down: {...}, long_press: {...} }
@@ -69,7 +70,7 @@ keyboard:             # 键盘配置
 ```yaml
 metadata:
   app_name: Xime
-  app_version: ">=2.4.0"
+  app_version: ">=2.4.2"
   platform: android
   config_version: 1
   generator: "Xime"
@@ -81,7 +82,7 @@ metadata:
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | `app_name` | 字符串 | 应用名称，固定为 `Xime` |
-| `app_version` | 字符串 | 版本约束（语义化版本范围），如 `">=2.4.0"`。配置文件加载时校验当前 APP 版本是否满足约束，不满足时仅警告不影响加载 |
+| `app_version` | 字符串 | 版本约束（语义化版本范围），如 `">=2.4.2"`。配置文件加载时校验当前 APP 版本是否满足约束，不满足时仅警告不影响加载 |
 | `platform` | 字符串 | 目标平台，可选 `android` / `windows` / `linux`。用于跨平台配置管理 |
 | `config_version` | 整数 | 配置文件格式版本，递增表示配置结构有破坏性变更。当前为 `1` |
 | `generator` | 字符串 | 生成配置的工具名称，如 `"Xime"`、`"Xime Settings Browser Import"` |
@@ -184,11 +185,12 @@ color_schemes:
 
 ## `keyboard` — 键盘配置
 
-`keyboard` 包含四个子部分：
+`keyboard` 包含五个子部分：
 
 | 子项 | 说明 |
 |------|------|
 | `colors` | 键盘颜色配置（可选） |
+| `key` | 按键样式配置（可选，v2.5.0+） |
 | `shadow` | 按键阴影配置（可选） |
 | `qwerty` | 中文键盘（26 键）按键定义 |
 | `qwerty_en` | 英文键盘（26 键）按键定义 |
@@ -262,6 +264,24 @@ keyboard:
 | `candidate_text_color` | 十六进制 | 候选文字颜色（亮色主题） |
 | `candidate_text_color_dark` | 十六进制 | 候选文字颜色（暗色主题） |
 
+### `keyboard.key` — 按键样式配置（v2.5.0+）
+
+> **版本要求**：此功能需要 Xime **v2.5.0 及以上版本**。
+
+用于配置按键的圆角半径等外观属性。
+
+```yaml
+keyboard:
+  key:
+    corner_radius: 8    # 按键圆角半径（dp，默认 8）
+```
+
+#### 字段说明
+
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `corner_radius` | 整数 | `8` | 按键圆角半径，单位 dp |
+
 ### `keyboard.shadow` — 按键阴影
 
 可选，不设置则使用默认值。
@@ -271,7 +291,6 @@ keyboard:
   shadow:
     enabled: true        # 是否启用阴影
     elevation: 1         # 阴影高度（dp，默认 1）
-    shape_radius: 8      # 阴影圆角半径（dp，默认 8）
 ```
 
 #### 字段说明
@@ -280,78 +299,6 @@ keyboard:
 |------|------|--------|------|
 | `enabled` | 布尔 | `true` | 是否启用按键阴影 |
 | `elevation` | 整数 | `1` | 阴影高度，单位 dp |
-| `shape_radius` | 整数 | `8` | 阴影圆角半径，单位 dp |
-
----
-
-## `keyboard.colors` — 键盘颜色配置
-
-> 可选，不设置则使用内置默认值。
-
-```yaml
-keyboard:
-  colors:
-    keyboard_bg_color: 0xE3E4E8
-    keyboard_bg_color_dark: 0x202020
-    key_bg_color: 0xFFFFFF
-    key_bg_color_dark: 0x4A4A4A
-    # special_key_bg_color: 0x9fef86        # 不设置时默认取主题色
-    # special_key_bg_color_dark: 0x4A4A4A   # 不设置时默认取主题色
-    candidate_bar_bg_color: 0xE3E4E8
-    candidate_bar_bg_color_dark: 0x202020
-    key_text_color: 0x202124
-    key_text_color_dark: 0xE8EAED
-    candidate_text_color: 0x202124
-    candidate_text_color_dark: 0xE8EAED
-```
-
-### 字段说明
-
-| 字段 | 说明 |
-|------|------|
-| `keyboard_bg_color` | 键盘背景色（亮色模式） |
-| `keyboard_bg_color_dark` | 键盘背景色（暗色模式） |
-| `key_bg_color` | 按键背景色（亮色模式） |
-| `key_bg_color_dark` | 按键背景色（暗色模式） |
-| `special_key_bg_color` | 特殊按键背景色（亮色模式，不设置时默认取主题色） |
-| `special_key_bg_color_dark` | 特殊按键背景色（暗色模式，不设置时默认取主题色） |
-| `candidate_bar_bg_color` | 候选栏背景色（亮色模式） |
-| `candidate_bar_bg_color_dark` | 候选栏背景色（暗色模式） |
-| `key_text_color` | 按键文字颜色（亮色模式） |
-| `key_text_color_dark` | 按键文字颜色（暗色模式） |
-| `candidate_text_color` | 候选文字颜色（亮色模式） |
-| `candidate_text_color_dark` | 候选文字颜色（暗色模式） |
-
-> 颜色值格式为 `0xAARRGGBB`（Alpha + RGB），AA 可省略（默认为完全不透明）。
-
----
-
-## `keyboard.shadow` — 按键阴影配置
-
-> 可选，不设置则使用默认值。
-
-```yaml
-keyboard:
-  shadow:
-    enabled: true      # 是否启用阴影
-    elevation: 1       # 阴影高度（dp）
-    shape_radius: 8    # 阴影圆角半径（dp）
-```
-
-### 字段说明
-
-| 字段 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| `enabled` | 布尔 | `true` | 是否启用按键阴影 |
-| `elevation` | 整数 | `1` | 阴影高度，单位 dp |
-| `shape_radius` | 整数 | `8` | 阴影圆角半径，单位 dp |
-
-
-你可以通过上面的配置达到无边框的效果：
-
-![key](./adv/key.jpg)
-
----
 
 ## `keyboard.keys` — 键盘按键配置
 
@@ -411,6 +358,7 @@ a: { tap: "a", swipe_up: { label: "～", value: "~" } }
 | `commit` | 上屏文字（`value` 指定上屏内容，不指定则用 `label`） |
 | `toggle_ascii` | 中/英输入模式切换 |
 | `command` | 执行内置命令（`value` 指定命令名） |
+| `clipboard` | 打开剪贴板面板，供选择粘贴 |
 | `select_all` | 全选当前输入框中的文本 |
 | `copy` | 复制选中的文本 |
 | `cut` | 剪切选中的文本 |
@@ -496,14 +444,14 @@ swipe_down:
 
 ### 中/英切换键
 
-使用键名 `shift_l`，通过 `toggle_ascii` 动作切换中英文输入模式：
+使用键名 `earth`，通过 `toggle_ascii` 动作切换中英文输入模式：
 
 ```yaml
 # 中文键盘：按键显示"英"，点击切换到英文模式
-shift_l: { tap: { label: "英", action: "toggle_ascii" } }
+earth: { tap: { label: "英", action: "toggle_ascii" } }
 
 # 英文键盘：按键显示"中"，点击切换到中文模式
-shift_l: { tap: { label: "中", action: "toggle_ascii" } }
+earth: { tap: { label: "中", action: "toggle_ascii" } }
 ```
 
 ---
@@ -530,7 +478,7 @@ shift_l: { tap: { label: "中", action: "toggle_ascii" } }
 ```yaml
 metadata:
   app_name: Xime
-  app_version: ">=2.4.0"
+  app_version: ">=2.4.2"
   platform: android
   config_version: 1
   generator: "Xime"
@@ -594,12 +542,14 @@ color_schemes:
     key_text_color_dark: 0xE8EAED
     candidate_text_color: 0x202124
     candidate_text_color_dark: 0xE8EAED
-  
+
+  key:
+    corner_radius: 8
+
   shadow:
     enabled: true
     elevation: 1
-    shape_radius: 8
-  
+
   keys:
     # ── 第一行 ──
     # long_press 顺序：小写 → 大写 → 带变音符号的相似字母
@@ -660,20 +610,38 @@ keyboard:
     candidate_text_color: 0x202124
     candidate_text_color_dark: 0xE8EAED
   
+  key:
+    corner_radius: 8
+
   shadow:
     enabled: true
     elevation: 1
-    shape_radius: 8
   
-  keys:
-    # ── 第三行（仅列出有修改的按键）──
-    z: { tap: "z", swipe_up: "*", swipe_down: { label: "全选", action: "select_all", display: "key" }, long_press: { display: "bubble", values: [ { label: "清空", action: "command", value: "clear_composition" } ] } }
-    x: { tap: "x", swipe_up: "@", swipe_down: { label: "剪切", action: "cut", display: "key" }, long_press: { display: "bubble", values: ["x", "X"] } }
-    c: { tap: "c", swipe_up: "、", swipe_down: { label: "复制", action: "copy", display: "key" }, long_press: { display: "bubble", values: ["c", "C", "ç"] } }
-    v: { tap: "v", swipe_up: "？", swipe_down: { label: "粘贴", action: "paste", display: "key" }, long_press: { display: "bubble", values: ["v", "V"] } }
-    b: { tap: "b", swipe_up: "！", swipe_down: { label: "", action: "none", display: "key" }, long_press: { display: "bubble", values: ["b", "B"] } }
-    n: { tap: "n", swipe_up: "%", swipe_down: { label: "段首", action: "line_start", display: "key" }, long_press: { display: "bubble", values: ["n", "N", "ñ"] } }
-    m: { tap: "m", swipe_up: "#", swipe_down: { label: "段尾", action: "line_end", display: "key" }, long_press: { display: "bubble", values: ["m", "M"] } }
+  qwerty:
+    keys:
+      # ── 第三行（仅列出有修改的按键）──
+      z: { tap: "z", swipe_up: "*", swipe_down: { label: "全选", action: "select_all", display: "key" }, long_press: { display: "bubble", values: [ { label: "清空", action: "command", value: "clear_composition" } ] } }
+      x: { tap: "x", swipe_up: "@", swipe_down: { label: "剪切", action: "cut", display: "key" }, long_press: { display: "bubble", values: ["x", "X"] } }
+      c: { tap: "c", swipe_up: "、", swipe_down: { label: "复制", action: "copy", display: "key" }, long_press: { display: "bubble", values: ["c", "C", "ç"] } }
+      v: { tap: "v", swipe_up: "？", swipe_down: { label: "粘贴", action: "paste", display: "key" }, long_press: { display: "bubble", values: ["v", "V"] } }
+      b: { tap: "b", swipe_up: "！", swipe_down: { label: "", action: "none", display: "key" }, long_press: { display: "bubble", values: ["b", "B"] } }
+      n: { tap: "n", swipe_up: "%", swipe_down: { label: "段首", action: "line_start", display: "key" }, long_press: { display: "bubble", values: ["n", "N", "ñ"] } }
+      m: { tap: "m", swipe_up: "#", swipe_down: { label: "段尾", action: "line_end", display: "key" }, long_press: { display: "bubble", values: ["m", "M"] } }
+  
+  qwerty_en:
+    keys:
+      # ── 第三行（仅列出有修改的按键）──
+      z: { tap: "z", swipe_up: "*", swipe_down: { label: "全选", action: "select_all", display: "key" }, long_press: { display: "bubble", values: [ { label: "clear", action: "command", value: "clear_composition" } ] } }
+      x: { tap: "x", swipe_up: "@", swipe_down: { label: "cut", action: "cut", display: "key" }, long_press: { display: "bubble", values: ["x", "X"] } }
+      c: { tap: "c", swipe_up: "、", swipe_down: { label: "copy", action: "copy", display: "key" }, long_press: { display: "bubble", values: ["c", "C"] } }
+      v: { tap: "v", swipe_up: "?", swipe_down: { label: "paste", action: "paste", display: "key" }, long_press: { display: "bubble", values: ["v", "V"] } }
+      b: { tap: "b", swipe_up: "!", swipe_down: { label: "", action: "none", display: "key" }, long_press: { display: "bubble", values: ["b", "B"] } }
+      n: { tap: "n", swipe_up: "%", swipe_down: { label: "line start", action: "line_start", display: "key" }, long_press: { display: "bubble", values: ["n", "N"] } }
+      m: { tap: "m", swipe_up: "#", swipe_down: { label: "line end", action: "line_end", display: "key" }, long_press: { display: "bubble", values: ["m", "M"] } }
+      # 逗号键
+      "'": { tap: { label: ",", value: "," }, swipe_up: { label: ".", value: "." } }
+      # 中/英切换键
+      earth: { tap: { label: "中", action: "toggle_ascii" } }
 ```
 ![shortcuat](./adv/shortcut.jpg)
 
@@ -781,7 +749,7 @@ keyboard:
       # 逗号键
       "'": { tap: { label: ",", value: "," }, swipe_up: { label: ".", value: "." } }
       # 中/英切换键
-      shift_l: { tap: { label: "中", action: "toggle_ascii" } }
+      earth: { tap: { label: "中", action: "toggle_ascii" } }
 ```
 
 ![cangjie](./adv/cangjie.jpg)
