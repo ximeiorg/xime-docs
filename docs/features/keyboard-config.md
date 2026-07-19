@@ -226,6 +226,42 @@ keyboard:
     button_layout: compact    # 英文键盘也使用紧凑布局
 ```
 
+### `keyboard.qwerty.layout.rows` — 键盘行布局自定义（v2.5.2+）
+
+> **版本要求**：此功能需要 Xime **v2.5.2 及以上版本**。
+
+用于自定义键盘每行显示的按键。默认 26 键键盘为 3 行布局（10 + 9 + 7），你可以通过 `layout.rows` 重新排列。
+
+```yaml
+keyboard:
+  qwerty:
+    layout:
+      rows:
+        - [q, w, e, r, t, y, u, i, o, p]
+        - [a, s, d, f, g, h, j, k, l, ";"]
+        - [z, x, c, v, b, n, m]
+```
+
+#### 字段说明
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `rows` | 数组 | 二维数组，每行为一个按键名称数组，按键名称为 `keys` 中定义的键名 |
+
+> 注意：`layout.rows` 只控制按键的排列位置和顺序，按键的具体行为（手势）仍需在 `keys` 中定义。目前第四行（空格、功能键等）暂不受 `layout` 控制。
+
+`qwerty_en` 也支持同样的配置：
+
+```yaml
+keyboard:
+  qwerty_en:
+    layout:
+      rows:
+        - [q, w, e, r, t, y, u, i, o, p]
+        - [a, s, d, f, g, h, j, k, l, ";"]
+        - [z, x, c, v, b, n, m]
+```
+
 ### `keyboard.colors` — 键盘颜色
 
 可选，不设置则使用内置默认值。
@@ -376,6 +412,7 @@ a: { tap: "a", swipe_up: { label: "～", value: "~" } }
 | 命令 | 说明 |
 |------|------|
 | `clear_composition` | 清空当前输入编码和候选词 |
+| `show_ime_picker` | 显示系统输入法选择器（切换输入法） |
 
 #### 6. 显示模式（display）
 
@@ -454,6 +491,15 @@ earth: { tap: { label: "英", action: "toggle_ascii" } }
 earth: { tap: { label: "中", action: "toggle_ascii" } }
 ```
 
+#### 动态语言标签
+
+使用 `@language` 作为 `label` 时，按键会自动显示当前语言的名称（中文键盘显示"英"，英文键盘显示"中"），无需手动指定：
+
+```yaml
+# 自动显示当前语言的切换按钮
+earth: { tap: { label: "@language", action: "toggle_ascii" } }
+```
+
 ---
 
 ## 参考示例
@@ -467,6 +513,7 @@ earth: { tap: { label: "中", action: "toggle_ascii" } }
 | [`xime.flypy.yaml`](https://github.com/kingzcheung/Xime/blob/main/docs/config_examples/xime.flypy.yaml) | 小鹤双拼韵母提示示例 |
 | [`xime.cangjie.yaml`](https://github.com/kingzcheung/Xime/blob/main/docs/config_examples/xime.cangjie.yaml) | 仓颉输入法按键配置示例 |
 | [`xime.shortcut.yaml`](https://github.com/kingzcheung/Xime/blob/main/docs/config_examples/xime.shortcut.yaml) | 快捷操作按键配置示例 |
+| [`xime.ms.double.yaml`](https://github.com/kingzcheung/Xime/blob/main/docs/config_examples/xime.ms.double.yaml) | 微软双拼方案配置示例（含 `layout.rows` 自定义键盘行布局） |
 | [`xime.theme_example.yaml`](https://github.com/kingzcheung/Xime/blob/main/docs/config_examples/xime.theme_example.yaml) | 主题配色自定义示例 |
 
 你可以在浏览器中打开这些文件，将内容复制到 `xime.custom.yaml` 中，或直接点击 `Raw` 按钮下载原始文件后通过"浏览器导入"上传。
