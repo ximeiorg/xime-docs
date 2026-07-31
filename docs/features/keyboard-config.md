@@ -186,7 +186,9 @@ color_schemes:
 > `primary_color` 中的 AA 为 Alpha 通道（透明度），可省略（省略时默认为完全不透明）。
 > 各颜色覆盖字段不填时，将回退到 `keyboard.colors` 中的全局默认值。
 
-### `keyboard_background` — 键盘背景
+### `keyboard_background` — 键盘背景（v2.6 新增）
+
+> 以下功能在 v2.6.0 以上版本才可用。
 
 `keyboard_background` 支持三种背景类型（`type`），默认均为纯色。如需渐变/图片背景，在对应主题下覆盖 `keyboard_background` 即可。
 
