@@ -178,8 +178,62 @@ color_schemes:
 | `键名` | 字符串 | 配色唯一标识，如 `lavender_purple`，被 `style.color_scheme` 引用 |
 | `name` | 字符串 | 配色显示名称，在设置界面中展示 |
 | `primary_color` | 十六进制 | 主题色，格式 `0xAARRGGBB`（Alpha + RGB）。如 `0x8F73E2` 为薰衣草紫 |
+| `keyboard_background` | 对象 | 可选，键盘背景配置（纯色/渐变/图片），不填则使用全局默认 |
+| `key_bg_color` / `key_bg_color_dark` | 十六进制 | 可选，按键背景色及其暗色变体 |
+| `key_text_color` / `key_text_color_dark` | 十六进制 | 可选，按键文字颜色及其暗色变体 |
+| `candidate_text_color` / `candidate_text_color_dark` | 十六进制 | 可选，候选文字颜色及其暗色变体 |
 
 > `primary_color` 中的 AA 为 Alpha 通道（透明度），可省略（省略时默认为完全不透明）。
+> 各颜色覆盖字段不填时，将回退到 `keyboard.colors` 中的全局默认值。
+
+### `keyboard_background` — 键盘背景
+
+`keyboard_background` 支持三种背景类型（`type`），默认均为纯色。如需渐变/图片背景，在对应主题下覆盖 `keyboard_background` 即可。
+
+**纯色（solid）：**
+
+```yaml
+keyboard_background:
+  type: solid
+  color: 0xE3E4E8        # 亮色
+  color_dark: 0x1E1838   # 暗色（可选，不填则自动暗化）
+```
+
+**渐变（gradient）：**
+
+```yaml
+keyboard_background:
+  type: gradient
+  colors: [0x8F73E2, 0xE8DEF8]        # 亮色渐变断点（至少 2 个）
+  colors_dark: [0x4A3F7A, 0x2D2040]   # 暗色渐变断点（可选）
+  angle: 90                            # 角度制，0=左→右，90=下→上
+```
+
+**图片（image）：**
+
+```yaml
+keyboard_background:
+  type: image
+  src: "themes/bg.png"          # 相对于 rime/ 用户目录（优先）或 assets/（回退）
+  src_dark: "themes/bg_night.png" # 暗色变体（可选）
+  fit: cover                     # cover | contain | fill | fit_width | fit_height | none
+  overlay_alpha: 0.35            # 背景遮罩强度（0~1），半透明黑色覆盖层压暗背景
+  overlay_alpha_dark: 0.5        # 暗色模式下的遮罩强度（可选，不填则沿用 overlay_alpha）
+```
+
+| `fit` 值 | 说明 |
+|------|------|
+| `cover` | 缩放并裁剪以铺满背景（默认） |
+| `contain` | 完整显示图片，可能有留白 |
+| `fill` | 拉伸铺满，可能变形 |
+| `fit_width` | 宽度铺满，高度自适应 |
+| `fit_height` | 高度铺满，宽度自适应 |
+| `none` | 原始大小 |
+
+自定义图片背景有两种方式：
+
+1. **分享导入**：在系统相册/文件管理中把图片「分享到 Xime」，图片自动存入 `rime/themes/custom_<时间戳>.jpg`，并把可用的 `color_schemes` 配置模板复制到剪贴板，粘贴到 `rime/xime.custom.yaml` 后即可在主题设置中选择。
+2. **手动放置**：把图片放入 `rime/themes/`（如通过 USB 或文件管理器），然后在 `xime.custom.yaml` 中添加引用它的 `color_scheme`，`src` 写相对 `rime/` 的路径。内置主题的同名文件会被用户目录中的文件覆盖。
 
 ---
 
@@ -716,6 +770,22 @@ color_schemes:
   zine_deep:
     name: "墨灰 · 浓"
     primary_color: 0x212121
+
+  zine_photo:
+    name: "夜幕之影"     # 图片背景示例，配合 overlay_alpha 压暗
+    primary_color: 0x8F73E2
+    keyboard_background:
+      type: image
+      src: "themes/bg.jpg"
+      fit: cover
+      overlay_alpha: 0.15
+      overlay_alpha_dark: 0.30
+    key_bg_color: 0x8cffffff
+    key_bg_color_dark: 0x5affffff
+    key_text_color: 0x232323
+    key_text_color_dark: 0xf2f2f2
+    candidate_text_color: 0x232323
+    candidate_text_color_dark: 0xf2f2f2
 ```
 
 ![theme](./adv/custom_theme.jpg)
