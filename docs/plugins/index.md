@@ -1,8 +1,18 @@
 # Xime 插件列表
 
-这里展示所有可用的Xime 表情插件。插件为独立 APK，需要单独安装。
+这里展示所有可用的 Xime 插件。插件为独立 APK（`.xipk`），需要单独安装。
 
 ## 官方插件
+
+### FunAsr（阿里百炼在线语音识别）
+
+**版本：** 1.0.0
+
+**说明：** 阿里百炼 FunAsr 在线语音识别（WebSocket 流式，自带标点）。安装后在「设置 → 语音转文本」中配置 API Key 并选择使用。
+
+**下载：** [APK](https://github.com/ximeiorg/Xime/releases) | **源码：** [GitHub](https://github.com/ximeiorg/Xime/tree/main/plugins/funasr-asr)
+
+---
 
 ### Kaomoji（颜文字）
 

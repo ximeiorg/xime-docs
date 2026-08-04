@@ -42,15 +42,17 @@ Xime 采用动态加载插件架构，表情插件只提供数据，由主应用
 
 ### 插件类型
 
-Xime 目前只支持表情插件类型：
+Xime 的插件类型由 manifest 的 `plugin.type` 决定，是**受控词汇**：
 
 | 类型 | 接口 | 用途 |
 |------|------|------|
-| EMOJI | EmojiPlugin | 表情输入（颜文字、贴纸等） |
+| `emoji` | EmojiPlugin | 表情输入（颜文字、贴纸等） |
+| `speech` | AsrPlugin | 在线语音识别（ASR）供应商 |
+| `prediction` | 规划中 | 智能预测 |
+| 其他/缺失 | - | 归入「其他」分组 |
 
 **重要特性**：
-- 插件只提供资源数据（EmojiItem）
-- 主应用负责展示和交互
+- 插件只提供资源/能力数据，主应用负责展示和交互
 - 插件不需要 UI 代码，不依赖 Compose
 
 ## 开发插件步骤
@@ -165,6 +167,14 @@ dependencies {
             android:name="plugin.type"
             android:value="emoji" />
         
+        <!-- 可选：支持的宿主主应用版本范围（缺省表示不限版本） -->
+        <meta-data
+            android:name="plugin.minHostVersion"
+            android:value="2.6.0" />
+        <meta-data
+            android:name="plugin.maxHostVersion"
+            android:value="3.0.0" />
+        
     </application>
 
 </manifest>
@@ -173,7 +183,29 @@ dependencies {
 **关键点**：
 - `PluginDeclaration` Activity 用于插件发现
 - `plugin.entryClass` 指定插件入口类
-- `plugin.type` 必须是 `emoji`
+- `plugin.type` 是受控词汇（`emoji` / `speech` / 其他）
+- `plugin.minHostVersion` / `plugin.maxHostVersion`（可选）：插件声明的宿主版本范围，取值为主应用 `versionName`（如 `2.6.0` / `2.6.0-beta3`），比较时忽略预发布/构建后缀。缺省表示不限版本，现有插件不声明即默认兼容。
+
+### 插件宿主版本范围（可选）
+
+插件声明其支持的**主应用（宿主）版本范围**，宿主在安装与加载时校验，避免宿主更新后插件行为异常：
+
+```xml
+<meta-data
+    android:name="plugin.minHostVersion"
+    android:value="2.6.0" />
+<meta-data
+    android:name="plugin.maxHostVersion"
+    android:value="3.0.0" />
+```
+
+- 两个字段均为可选；缺省即"不限版本"。
+- 取值为宿主 `versionName`（如 `2.6.0` / `2.6.0-beta3`），按数字段逐位比较（忽略 `-beta3` 预发布后缀），由 `VersionUtil` 处理。
+- 宿主行为：
+  - **安装时**：当前 app 版本不在范围内 → 安装失败并提示"当前主应用版本 vX 不在插件支持范围内（最低 vA - vB）"。
+  - **加载时**：批量加载与单插件启动都校验，不兼容的插件跳过加载 / 拒绝启动。
+  - **插件管理页**：不兼容的插件显示 ⚠ 标记、"与主应用版本不兼容"及支持范围，并禁用启用开关 / "去选择"按钮。
+- 常见用法：`minHostVersion` 指向插件依赖的宿主 API 起始版本，`maxHostVersion` 用于提前拦截已知不兼容的大版本升级。
 
 ### 4. 实现插件入口类
 
@@ -376,12 +408,13 @@ interface EmojiPlugin : IPluginEntryClass {
     // 可选：自定义分类布局
     suspend fun getCategoryLayoutConfig(category: String): CategoryLayoutConfig? = null
     
-    // 可选：插件图标
-    fun getIcon(): PluginIcon? = null
-    
     override fun hasSettings(): Boolean = false
     override fun openSettings(context: Context) {}
 }
+```
+
+> 💡 `getIcon()` 声明在公共基类 `IPluginEntryClass` 上（见下文"PluginIcon 使用说明"），
+> 因此**所有插件类型**（emoji / speech / 其他）都能提供图标，不限于表情插件。
 
 data class CategoryLayoutConfig(
     val columns: Int = 8,
@@ -430,7 +463,9 @@ data class PluginInfo(
     val enabled: Boolean = true,
     val installTime: Long = System.currentTimeMillis(),
     val nativeLibPath: String? = null,
-    val providers: List<ProviderInfo> = emptyList()
+    val providers: List<ProviderInfo> = emptyList(),
+    val minHostVersion: String? = null,   // 支持的宿主最低版本（可选）
+    val maxHostVersion: String? = null    // 支持的宿主最高版本（可选）
 )
 ```
 
@@ -550,6 +585,7 @@ adb install app/build/outputs/apk/debug/my-plugin.apk
 
 | 插件 | 类型 | 特点 |
 |------|------|------|
+| funasr-asr | SPEECH | 阿里百炼 FunAsr 在线语音识别（WebSocket 流式，自带标点） |
 | kaomoji | EMOJI | 预定义颜文字数据 |
 | meme-bunny | EMOJI | 恶搞兔表情包（从 APK assets 加载） |
 
