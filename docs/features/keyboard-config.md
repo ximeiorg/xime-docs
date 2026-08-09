@@ -182,6 +182,7 @@ color_schemes:
 | `key_bg_color` / `key_bg_color_dark` | 十六进制 | 可选，按键背景色及其暗色变体 |
 | `key_text_color` / `key_text_color_dark` | 十六进制 | 可选，按键文字颜色及其暗色变体 |
 | `candidate_text_color` / `candidate_text_color_dark` | 十六进制 | 可选，候选文字颜色及其暗色变体 |
+| `candidate_selected_text_color` / `candidate_selected_text_color_dark` | 十六进制 | 可选，候选选中文字颜色及其暗色变体（v2.6.0-beta3+）。未设置时回退到 `key_text_color` |
 
 > `primary_color` 中的 AA 为 Alpha 通道（透明度），可省略（省略时默认为完全不透明）。
 > 各颜色覆盖字段不填时，将回退到 `keyboard.colors` 中的全局默认值。

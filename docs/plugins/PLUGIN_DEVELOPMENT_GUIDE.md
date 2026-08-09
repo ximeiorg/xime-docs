@@ -1,601 +1,415 @@
 # Xime 插件开发完整指南
 
+> **版本要求**：本文档面向 **Xime v2.6.0+** 的 Lua 脚本插件架构。v2.6.0 起，Xime 用 Lua 脚本插件替换了旧的 DEX/APK 插件架构。
+
 ## 插件系统架构
 
-Xime 采用动态加载插件架构，表情插件只提供数据，由主应用负责展示。
+Xime 采用 **Lua 脚本插件** 架构：插件包（`.xipk`，本质是 zip）内含 `manifest.yaml` 元数据、`main.lua` 入口脚本和 `resources/` 资源文件。宿主应用内置 Lua 沙箱执行插件逻辑，插件通过注入的全局 `host` API 与宿主交互。
 
 ```
 ┌─────────────────────────────────────────────┐
-│          主应用 (Xime  APK)                   │
+│             主应用 (Xime APK)                │
 │                                              │
 │  ┌─────────────────────────────────────┐   │
-│  │   PluginManager                      │   │
-│  │   - PluginClassLoader 加载插件APK    │   │
-│  │   - PluginLifecycleManager 管理生命周期 │   │
+│  │  PluginManager                       │   │
+│  │  - InstallerManager  安装/卸载       │   │
+│  │  - PluginLifecycleManager 加载/生命周期│   │
+│  │  - XmlManager        注册表(plugins.xml)│  │
 │  └─────────────────────────────────────┘   │
 │                                              │
 │  ┌─────────────────────────────────────┐   │
-│  │   ExtensionManager                   │   │
-│  │   - 管理表情数据                     │   │
-│  │   - 提供 emojiCategoriesFlow        │   │
+│  │  LuaScriptRuntime (LuaJ 沙箱)        │   │
+│  │  - 注入 host API（唯一宿主入口）      │   │
+│  │  - 剥离危险库（os/io/luajava 等）     │   │
+│  │  - 受限 require（仅 libs/ 目录）      │   │
+│  └─────────────────────────────────────┘   │
+│                                              │
+│  ┌─────────────────────────────────────┐   │
+│  │  适配器按 type 分派                  │   │
+│  │  - LuaEmojiPluginAdapter  → 表情     │   │
+│  │  - LuaAsrPluginAdapter   → 语音识别  │   │
+│  │  - LuaPluginAdapter     → 其他       │   │
 │  └─────────────────────────────────────┘   │
 └─────────────────────────────────────────────┘
-            │
-            │ PluginClassLoader 加载
+            │ 安装（InstallerManager 解压）
             ▼
 ┌─────────────────────────────────────────────┐
-│       插件 APK (独立安装)                    │
+│       插件包 (.xipk = zip)                   │
 │                                              │
-│  ┌─────────────────────────────────────┐   │
-│  │   EmojiPlugin 实现                   │   │
-│  │   - onLoad(PluginContext)            │   │
-│  │   - onUnload()                       │   │
-│  │   - getEmojis() 提供表情数据         │   │
-│  │   - getCategories() 提供分类         │   │
-│  └─────────────────────────────────────┘   │
-│                                              │
-│  插件不需要 UI，不依赖 Compose              │
+│  ├── manifest.yaml   # 元数据（宿主解析）     │
+│  ├── main.lua        # 入口脚本（必须 return 导出表）│
+│  ├── libs/           # 纯 Lua 依赖库（可选）   │
+│  └── resources/      # 资源文件（icon、图片等） │
 └─────────────────────────────────────────────┘
 ```
+
+**核心特性**：
+
+- 插件**不需要编译、不需要 Android SDK**，纯 Lua 脚本 + YAML 元数据
+- 插件逻辑在沙箱内运行，脚本错误不会导致宿主崩溃
+- 每个插件拥有独立的 Lua state 和配置存储，完全隔离
+- 插件只能通过 `host` API 访问宿主能力，无法发起未授权的网络请求
 
 ## 核心概念
 
 ### 插件类型
 
-Xime 的插件类型由 manifest 的 `plugin.type` 决定，是**受控词汇**：
+插件的 `type` 字段决定其归属分组和宿主消费方式：
 
-| 类型 | 接口 | 用途 |
+| 类型 | 分组 | 激活方式 | 消费接口 |
+|------|------|---------|---------|
+| `emoji` | 表情 | 多选（MULTI） | `LuaEmojiPluginAdapter` |
+| `speech` | 语音转文本 | 单选（SINGLE） | `LuaAsrPluginAdapter` |
+| `prediction` | 智能预测（预留） | 多选 | `LuaPluginAdapter` |
+| `unknown` / 缺失 | 其他 | 无 | `LuaPluginAdapter` |
+
+### 信任等级（Trust Level）
+
+Lua 插件没有 APK 签名，信任等级完全由**来源**决定：
+
+| 等级 | 来源 | UI 徽标 |
+|------|------|---------|
+| `TRUSTED`（官方） | 随宿主内置（`ASSET`）、市场官方索引下载（`REMOTE`） | 绿色「官方」 |
+| `THIRD_PARTY`（第三方） | 用户本地文件导入（`FILE`） | 橙色「第三方」 |
+| `UNKNOWN`（未知） | 仅作默认值 | 红色「未知来源」 |
+
+非官方插件激活时会弹出确认框；第三方插件**无法静默发起任意网络请求**。
+
+## 插件包结构
+
+```
+my-plugin/
+├── manifest.yaml      # 元数据（宿主解析）
+├── main.lua           # 入口脚本（必须 return 导出表）
+├── libs/              # 纯 Lua 依赖库（可选，require 受限加载）
+└── resources/         # 资源文件（icon、表情图等）
+```
+
+打包为 zip（`.xipk`）后导入或从插件市场下载。
+
+## manifest.yaml 字段
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+|------|------|------|--------|------|
+| `id` | String | **必填** | 无 | 插件唯一标识（反向域名风格） |
+| `name` | String | 可选 | = id | 插件显示名 |
+| `type` | String | 可选 | `"unknown"` | 分类：`emoji` / `speech` / `prediction` / 其他 |
+| `entry` | String | 可选 | `"main.lua"` | 入口脚本（相对包根目录） |
+| `version` | String | 可选 | `"0.0.0"` | 版本字符串 |
+| `description` | String | 可选 | `""` | 描述 |
+| `minHostVersion` | String | 可选 | 无 | 宿主最低版本（如 `2.6.0`） |
+| `maxHostVersion` | String | 可选 | 无 | 宿主最高版本 |
+| `network.hosts` | List\<String\> | 可选 | `[]` | 插件声明需要联网的域名 |
+
+> **注意**：`icon`、`activation`、`capabilities`、`configSchema` 等键出现在示例 manifest 中，但宿主解析器**不消费**这些字段——它们仅为文档性约定。真正的图标来自 Lua 的 `getIcon()`，配置表单来自 Lua 的 `getSettingsSchema()`，激活方式由 `type` 映射。
+
+示例：
+
+```yaml
+id: com.example.plugin.myplugin
+name: 我的插件
+description: 示例插件
+version: 1.0.0
+type: emoji
+entry: main.lua
+minHostVersion: 2.6.0
+
+network:
+  hosts:
+    - api.example.com
+```
+
+### 宿主版本兼容性（可选）
+
+`minHostVersion` / `maxHostVersion` 声明插件支持的主应用版本范围，宿主在**安装时**和**加载时**校验：
+
+- 取值为宿主 `versionName`（如 `2.6.0` / `2.6.0-beta3`），比较时忽略预发布/构建后缀（`-beta3`），无法解析时视为兼容
+- 安装时不兼容 → 安装失败并提示"当前主应用版本 vX 不在插件支持范围内（最低 vY - vZ）"
+- 插件管理页对不兼容插件显示 ⚠ 标记并禁用启用开关
+
+## 入口脚本约定
+
+`main.lua` **必须 `return` 一个导出表（table）**，宿主读取表中的函数并按约定调用：
+
+```lua
+local plugin = {}
+
+-- 可选生命周期回调
+function plugin.onLoad() end
+function plugin.onUnload() end
+
+return plugin
+```
+
+- 数据一律用 Lua table 返回，宿主统一做 table → Kotlin 转换
+- 函数不存在或抛错时宿主返回空结果，不会崩溃
+- 一个插件一个 Lua state，全局环境完全隔离
+
+## emoji 类型插件 API
+
+必须实现的函数：
+
+| 函数 | 返回 | 必需 |
 |------|------|------|
-| `emoji` | EmojiPlugin | 表情输入（颜文字、贴纸等） |
-| `speech` | AsrPlugin | 在线语音识别（ASR）供应商 |
-| `prediction` | 规划中 | 智能预测 |
-| 其他/缺失 | - | 归入「其他」分组 |
+| `getCategories()` | `string[]` | 是 |
+| `getEmojis(category, searchText, topK)` | `EmojiItem[]` | 是 |
 
-**重要特性**：
-- 插件只提供资源/能力数据，主应用负责展示和交互
-- 插件不需要 UI 代码，不依赖 Compose
+可选函数：
 
-## 开发插件步骤
+| 函数 | 返回 | 说明 |
+|------|------|------|
+| `getCategoryLayoutConfig(category)` | `{ columns?, itemHeightDp? }` | 自定义分类布局 |
+| `getIcon()` | `{ text }` 或 `{ assetName }` | 插件图标 |
+| `getSettingsSchema()` / `getOptions(key)` | 配置表单 | 设置界面 |
 
-### 1. 创建项目结构
+`EmojiItem` 字段：
 
-```
-my-kime-plugin/
-├── build.gradle.kts
-└── src/main/
-    ├── AndroidManifest.xml
-    ├── assets/           # 表情资源文件（可选）
-    └── java/com/example/plugin/
-        ├── PluginDeclaration.kt      # 空的 Activity（用于插件发现）
-        └── MyPlugin.kt               # 实现 EmojiPlugin
-```
-
-### 2. 配置 build.gradle.kts
-
-```kotlin
-plugins {
-    // AGP 9.0+ 已内置 Kotlin 编译支持
-    // 如果使用 AGP 9.0+，不需要单独应用 kotlin-android 插件
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android") version "2.3.20" apply false
-}
-
-android {
-    namespace = "com.example.kime.plugin"
-    compileSdk = 36
-    
-    defaultConfig {
-        applicationId = "com.example.kime.plugin.myplugin"
-        minSdk = 28
-        targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0"
-    }
-    
-    buildTypes {
-        release {
-            // 推荐禁用混淆，避免 Kotlin stdlib 方法丢失
-            isMinifyEnabled = false
-            isShrinkResources = false
-        }
-    }
-    
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-    
-    // AGP 9.0+ 中改用 kotlinCompilerOptions 块（如果使用旧版 AGP，请使用 kotlin 块）
-    // kotlin {
-    //     compilerOptions {
-    //         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-    //     }
-    // }
-}
-
-dependencies {
-    // compileOnly 依赖，插件运行时由 PluginClassLoader 加载
-    compileOnly(project(":plugin-core"))
-    
-    // 不需要 appcompat、material、core-ktx 等 UI 库
-    // 插件不需要 UI，不依赖 Compose
+```lua
+{
+  id = "emoji_1",              -- 唯一标识
+  text = "(^_^)",              -- 显示与插入文本
+  insertText = "(^_^)",        -- 可选，覆盖插入内容
+  imageUrl = "/path/to/img",   -- 可选，图片表情（host.resource.path 获取）
+  category = "颜文字",         -- 分类名称
 }
 ```
 
-**关键点**：
-- `compileOnly(project(":plugin-core"))` - 插件核心接口
-- `isMinifyEnabled = false` - 推荐禁用混淆，避免 Kotlin stdlib 方法丢失
-- 即使禁用混淆，某些 Kotlin stdlib 方法仍可能被宿主应用的 R8 规则裁剪，详见[插件可用的 API 范围](#6-插件可用的-api-范围)
-- 不需要 Compose 依赖（插件无 UI）
+表情图片通过 `host.resource.path("emojis/xxx.jpg")` 获取路径，**图片渲染由宿主完成，Lua 只提供路径**。
 
-> ⚠️ **AGP 9.0+ 注意事项**：如果使用 AGP 9.0 及以上版本，
-> 不需要显式应用 `kotlin("android")` 或 `org.jetbrains.kotlin.android` 插件，
-> AGP 已内置 Kotlin 编译支持。但仍需在 `build.gradle.kts` 中配置
-> Kotlin 编译选项（如 `compileOptions` 中的 jvmTarget）。
+### 示例（颜文字插件）
 
-### 3. 配置 AndroidManifest.xml
+```lua
+local plugin = {}
 
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    
-    <application
-        android:allowBackup="false"
-        android:label="@string/app_name"
-        android:supportsRtl="true">
-        
-        <!-- 插件声明 Activity（必须） -->
-        <activity
-            android:name=".PluginDeclaration"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="com.kingzcheung.xime.plugin.EXTENSION" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-        
-        <!-- 插件元数据 -->
-        <meta-data
-            android:name="plugin.entryClass"
-            android:value="com.example.plugin.MyPlugin" />
-        
-        <meta-data
-            android:name="plugin.description"
-            android:value="提供精选表情" />
-        
-        <meta-data
-            android:name="plugin.type"
-            android:value="emoji" />
-        
-        <!-- 可选：支持的宿主主应用版本范围（缺省表示不限版本） -->
-        <meta-data
-            android:name="plugin.minHostVersion"
-            android:value="2.6.0" />
-        <meta-data
-            android:name="plugin.maxHostVersion"
-            android:value="3.0.0" />
-        
-    </application>
+function plugin.getCategories()
+    return { "颜文字" }
+end
 
-</manifest>
+function plugin.getEmojis(category, searchText, topK)
+    local all = {
+        { id = "1", text = "(^_^)", category = "颜文字" },
+        { id = "2", text = "(T_T)", category = "颜文字" },
+    }
+    local result = all
+    if searchText and searchText ~= "" then
+        result = {}
+        for _, e in ipairs(all) do
+            if string.find(e.text, searchText, 1, true) then
+                table.insert(result, e)
+            end
+        end
+    end
+    local n = topK or 50
+    if #result > n then
+        local t = {}
+        for i = 1, n do t[i] = result[i] end
+        return t
+    end
+    return result
+end
+
+function plugin.getCategoryLayoutConfig(category)
+    return { columns = 3, itemHeightDp = 30 }
+end
+
+function plugin.getIcon()
+    return { text = "థ౪థ" }
+end
+
+return plugin
 ```
 
-**关键点**：
-- `PluginDeclaration` Activity 用于插件发现
-- `plugin.entryClass` 指定插件入口类
-- `plugin.type` 是受控词汇（`emoji` / `speech` / 其他）
-- `plugin.minHostVersion` / `plugin.maxHostVersion`（可选）：插件声明的宿主版本范围，取值为主应用 `versionName`（如 `2.6.0` / `2.6.0-beta3`），比较时忽略预发布/构建后缀。缺省表示不限版本，现有插件不声明即默认兼容。
+## speech 类型插件 API
 
-### 插件宿主版本范围（可选）
+语音识别插件提供元信息层和音频流后端层。
 
-插件声明其支持的**主应用（宿主）版本范围**，宿主在安装与加载时校验，避免宿主更新后插件行为异常：
+### 元信息层
 
-```xml
-<meta-data
-    android:name="plugin.minHostVersion"
-    android:value="2.6.0" />
-<meta-data
-    android:name="plugin.maxHostVersion"
-    android:value="3.0.0" />
-```
+| 函数 | 返回 | 说明 |
+|------|------|------|
+| `getProviderId()` | string | 缺省回退到插件 id |
+| `getDisplayName()` | string | 缺省回退到插件 name |
+| `getCapabilities()` | table | 能力声明（见下） |
+| `isConfigured()` | boolean | 是否已配置（如 API Key） |
+| `getSettingsSchema()` | 配置表单 | 设置界面 |
+| `getIcon()` | `{ text }` / `{ assetName }` | 插件图标 |
 
-- 两个字段均为可选；缺省即"不限版本"。
-- 取值为宿主 `versionName`（如 `2.6.0` / `2.6.0-beta3`），按数字段逐位比较（忽略 `-beta3` 预发布后缀），由 `VersionUtil` 处理。
-- 宿主行为：
-  - **安装时**：当前 app 版本不在范围内 → 安装失败并提示"当前主应用版本 vX 不在插件支持范围内（最低 vA - vB）"。
-  - **加载时**：批量加载与单插件启动都校验，不兼容的插件跳过加载 / 拒绝启动。
-  - **插件管理页**：不兼容的插件显示 ⚠ 标记、"与主应用版本不兼容"及支持范围，并禁用启用开关 / "去选择"按钮。
-- 常见用法：`minHostVersion` 指向插件依赖的宿主 API 起始版本，`maxHostVersion` 用于提前拦截已知不兼容的大版本升级。
+`getCapabilities()` 返回：
 
-### 4. 实现插件入口类
-
-```kotlin
-package com.example.plugin
-
-import android.content.Context
-import android.util.Log
-import com.kingzcheung.xime.plugin.core.api.EmojiItem
-import com.kingzcheung.xime.plugin.core.api.EmojiPlugin
-import com.kingzcheung.xime.plugin.core.api.PluginIcon
-import com.kingzcheung.xime.plugin.core.model.PluginContext
-import java.io.File
-import java.util.zip.ZipFile
-
-class MyPlugin : EmojiPlugin {
-    
-    private var pluginContext: PluginContext? = null
-    private var emojiList: List<EmojiItem> = emptyList()
-    
-    companion object {
-        private const val TAG = "MyPlugin"
-    }
-    
-    override fun onLoad(context: PluginContext) {
-        this.pluginContext = context
-        Log.d(TAG, "Plugin loaded: ${context.pluginInfo.id}")
-        
-        val filesDir = context.application.filesDir
-        
-        // 加载表情数据
-        loadEmojis(filesDir, context.pluginInfo.path)
-        
-        Log.d(TAG, "Loaded ${emojiList.size} emojis")
-    }
-    
-    override fun onUnload() {
-        emojiList = emptyList()
-        pluginContext = null
-        Log.d(TAG, "Plugin unloaded")
-    }
-    
-    private fun loadEmojis(filesDir: File, apkPath: String?) {
-        val emojis = mutableListOf<EmojiItem>()
-        
-        // 从 APK assets 加载表情
-        val actualApkPath = apkPath ?: pluginContext?.application?.applicationInfo?.sourceDir
-        if (actualApkPath != null) {
-            try {
-                ZipFile(File(actualApkPath)).use { zip ->
-                    zip.entries().asSequence()
-                        .filter { it.name.startsWith("assets/emojis/") && !it.isDirectory }
-                        .forEach { entry ->
-                            val fileName = entry.name.substringAfter("assets/emojis/")
-                            emojis.add(
-                                EmojiItem(
-                                    id = "emoji_$fileName",
-                                    displayText = fileName,
-                                    insertText = fileName,
-                                    imageUrl = null, // 或本地文件路径
-                                    category = "默认"
-                                    // displayConfig 可选，不传则使用默认配置
-                                )
-                            )
-                        }
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to load emojis", e)
-            }
-        }
-        
-        emojiList = emojis
-    }
-    
-    override suspend fun getEmojis(
-        category: String?, 
-        searchText: String?, 
-        topK: Int
-    ): List<EmojiItem> {
-        val filtered = if (searchText.isNullOrEmpty()) emojiList
-        else emojiList.filter { 
-            it.displayText.contains(searchText) || it.insertText.contains(searchText)
-        }
-        return filtered.take(topK)
-    }
-    
-    override suspend fun getCategories(): List<String> {
-        return emojiList.map { it.category }.distinct()
-    }
-    
-    override fun getIcon(): PluginIcon? = PluginIcon(assetName = "icon.png")
-    // 注意：assetName 必须是纯文件名，不能包含路径（如 "emojis/icon.png" 会报错）
-    
-    // 或者使用文本图标（推荐，简单可靠）：
-    // override fun getIcon(): PluginIcon? = PluginIcon(text = "🐰")
-    
-    // hasSettings() 默认返回 false，不需要设置界面
-    // openSettings() 默认空实现
+```lua
+{
+  inputMode = "streaming",        -- "streaming" | "batch"
+  supportsPartialResults = true,  -- 是否支持中间结果
+  maxRecordDurationMillis = 600000,
+  requiresNetwork = true,
 }
 ```
 
-### 5. 实现空的 PluginDeclaration
+### 后端层（音频流式识别）
 
-```kotlin
-package com.example.plugin
+| 函数 | 返回 | 说明 |
+|------|------|------|
+| `initialize()` | boolean | 初始化 |
+| `start()` | boolean | 开始识别 |
+| `processAudioChunk(pcm)` | - | 主 App 每帧提交 PCM 数据，由 Lua 决定缓冲还是发送 |
+| `stop()` | - | 停止 |
+| `cancel()` | - | 取消 |
+| `getState()` | number | `0=IDLE 1=LISTENING 2=PROCESSING 3=ERROR` |
 
-import android.app.Activity
-import android.os.Bundle
+**连接/协议/缓冲/结果解析全部由 Lua 承载**，宿主只提供通用原语。完整示例可参考 `plugins/funasr-asr/main.lua`（WebSocket 流式 + dashscope 协议）和 `plugins/volc-asr/main.lua`（火山引擎二进制协议 + gzip）。
 
-class PluginDeclaration : Activity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        // 空实现，用于插件发现
-    }
-}
+## host API（宿主注入的 SDK）
+
+插件可通过全局 `host` 表调用宿主能力：
+
+```
+host.sdkVersion                -- 字符串 "0.1.0"
+host.log(msg)                  -- 日志（print 也转发到此处）
+host.config.get(key) / set(key, value) / remove(key) / keys()  -- 配置（每插件独立存储）
+host.resource.path(name)       -- 返回 resources/<name> 绝对路径，不存在返回 nil
+host.resource.list(dir)        -- 列出 resources/<dir> 下文件名（不含子目录）
+host.json.encode(table)        -- Lua table → JSON 字符串
+host.json.decode(str)          -- JSON → Lua table
+host.uuid()                    -- 生成 UUID
+host.bin.int32be(n) / uint32be(n)  -- 大端序 4 字节编码（二进制协议用）
+host.zlib.gzip(bytes) / gunzip(bytes)  -- gzip 压缩/解压
+host.ws.connect(url, headers, callbacks) / sendText / sendBinary / close / getState / lastError
+host.asr.emitFinal(text) / emitPartial(text) / emitError(msg) / emitState(state)
 ```
 
-### 6. 插件可用的 API 范围
+### host.ws（WebSocket）
 
-插件通过宿主应用的 `PluginClassLoader` 加载，Kotlin stdlib 来自宿主应用。
-宿主应用的 ProGuard/R8 规则决定了哪些 Kotlin stdlib 方法会保留。
+协议无关的 WebSocket 原语：
 
-#### 宿主应用保留的 Kotlin stdlib 包
+- `host.ws.connect(url, headers, callbacks)` — 连接。callbacks 表支持 `onOpen`、`onMessage(text)`、`onBinary(bytes)`、`onError(msg)`、`onClose`
+- `host.ws.getState()` — 返回 `0=IDLE 1=CONNECTING 2=OPEN 3=CLOSED`
+- `host.ws.lastError()` — 最近一次错误原因
 
-宿主应用明确保留了以下 Kotlin stdlib 包，**插件可以安全使用**：
+> **网络策略**：连接 URL 必须通过域名白名单校验。放行条件：(1) 命中官方可信池，或 (2) 域名在插件 `network.hosts` 声明内 **且** 已获用户授权。否则 `connect` 返回 `false`，可经 `lastError()` 获取原因。
 
-| 包 | 说明 |
+### host.asr（结果回传桥）
+
+语音插件把识别结果回传给宿主：
+
+- `host.asr.emitFinal(text)` — 最终结果（整句上屏）
+- `host.asr.emitPartial(text)` — 中间结果（实时预览）
+- `host.asr.emitError(msg)` — 错误
+- `host.asr.emitState(state)` — 状态更新
+
+## 插件配置表单
+
+插件通过 Lua 导出 `getSettingsSchema()` 声明设置表单，宿主直接渲染（无需插件 UI）：
+
+```lua
+function plugin.getSettingsSchema()
+    return {
+        {
+            key = "apiKey",
+            label = "API Key",
+            type = "secret",          -- text | secret | select | multi_select | switch | number
+            placeholder = "输入 API Key",
+            defaultValue = "",
+            helpText = "获取方式说明",
+            section = "连接配置",      -- 可选，分组标题
+            required = true,
+        },
+        {
+            key = "region",
+            label = "区域",
+            type = "select",
+            options = { "cn-north-1", "cn-east-1" },
+        },
+    }
+end
+```
+
+字段类型与渲染方式：
+
+| 类型 | 渲染 |
 |------|------|
-| `kotlin.jvm.internal` | JVM 内部实现（如 `Intrinsics`） |
-| `kotlin.collections` | 集合操作（`listOf`、`mapOf`、`filter`、`map` 等） |
-| `kotlin.text` | 字符串处理（`split`、`replace`、`contains` 等） |
-| `kotlin.comparisons` | 比较操作（`compareBy`、`thenBy` 等） |
-| `kotlin.ranges` | 范围操作（`1..10`、`downTo` 等） |
-| `kotlin.sequences` | 序列操作（`sequenceOf`、`asSequence` 等） |
+| `text` / `number` | 文本输入框（number 用数字键盘） |
+| `secret` | 密码框 + 可见性切换 |
+| `switch` | 开关（值存 `"true"` / `"false"`） |
+| `select` | 下拉选择 |
+| `multi_select` | 多选标签（逗号拼接存储） |
 
-#### 插件不可用的 Kotlin stdlib 功能
+- 配置改动即持久化，存储于独立的 `plugin_cfg_<pluginId>` SharedPreferences
+- 保存时校验所有 `required` 的 `secret` 字段非空
+- `SELECT` / `MULTI_SELECT` 也可通过 `getOptions(key)` 动态拉取选项（如 ASR 模型列表）
 
-以下 Kotlin stdlib 包**未在宿主应用中保留**，插件应避免使用，否则可能在运行时抛出 `NoSuchMethodError`：
+## 打包与安装
 
-| 包 | 替代方案 |
-|------|----------|
-| `kotlin.io`（如 `readBytes`、`writeText` 等文件操作） | 使用 `java.io.*` 标准库 |
-| `kotlin.reflect`（如 `memberProperties`、`cast` 等反射操作） | 使用 `java.lang.reflect.*` |
-| `kotlin.math`（如 `sin`、`cos` 等数学函数） | 使用 `java.lang.Math` 或 `kotlin.math.*`（需自行保留） |
-| `kotlin.system`（如 `measureTimeMillis`） | 避免使用 |
-| `kotlin.concurrent`（如 `Thread` 扩展函数） | 使用 `java.util.concurrent.*` |
-| `kotlin.random`（如 `Random`） | 使用 `java.util.Random` |
-| `kotlin.time`（如 `measureTime`、`Duration`） | 使用 `System.currentTimeMillis()` |
-| `kotlinx.*`（协程、序列化等） | 如需使用请自行打包在插件 APK 中 |
+### 打包
 
-#### 插件 ProGuard 规则
-
-如果启用混淆，不需要再保留 Kotlin stdlib（由宿主应用负责），只需保留插件自身的类和入口：
-
-```proguard
-# Plugin ProGuard rules
--dontobfuscate
--optimizations !class/merging/*
-
-# 保留插件自身代码
--keep class com.example.plugin.** { *; }
--keepattributes SourceFile,LineNumberTable
-```
-
-**推荐**：保持 `isMinifyEnabled = false`（禁用混淆），这是最简单可靠的做法。
-
-## 插件数据结构
-
-### EmojiItem
-
-```kotlin
-data class EmojiDisplayConfig(
-    val span: Int = 1,           // 网格跨列数
-    val heightDp: Int = 40,      // 自定义高度
-    val aspectRatio: Float? = null // 宽高比（图片表情用）
-)
-
-data class EmojiItem(
-    val id: String,              // 唯一标识
-    val displayText: String,     // 显示文本
-    val insertText: String,      // 插入文本
-    val imageUrl: String?,       // 图片 URL（本地路径或网络 URL）
-    val category: String,        // 分类名称
-    val displayConfig: EmojiDisplayConfig? = null  // 显示配置（可选）
-)
-```
-
-> ⚠️ **重要**：`EmojiItem` 有 6 个字段！本地定义插件 API 接口时，**必须完整包含 `displayConfig` 字段**，否则运行时宿主应用会报 `NoSuchMethodError`。这是因为宿主应用的 `EmojiItem` 已包含该字段，而插件编译时使用本地定义，运行时由宿主类加载器加载，构造函数签名必须一致。
-
-### EmojiPlugin 接口
-
-```kotlin
-interface EmojiPlugin : IPluginEntryClass {
-    override fun onLoad(context: PluginContext)
-    override fun onUnload()
-    
-    suspend fun getEmojis(category: String?, searchText: String?, topK: Int): List<EmojiItem>
-    suspend fun getCategories(): List<String>
-    
-    // 可选：自定义分类布局
-    suspend fun getCategoryLayoutConfig(category: String): CategoryLayoutConfig? = null
-    
-    override fun hasSettings(): Boolean = false
-    override fun openSettings(context: Context) {}
-}
-```
-
-> 💡 `getIcon()` 声明在公共基类 `IPluginEntryClass` 上（见下文"PluginIcon 使用说明"），
-> 因此**所有插件类型**（emoji / speech / 其他）都能提供图标，不限于表情插件。
-
-data class CategoryLayoutConfig(
-    val columns: Int = 8,
-    val itemHeightDp: Int = 40
-)
-
-data class PluginIcon(
-    val text: String? = null,      // 表情符号文本（如 "🐰"）
-    val assetName: String? = null  // assets 中的图标文件名（如 "icon.png"）
-)
-```
-
-### PluginIcon 使用说明
-
-插件图标有两种方式：
-
-1. **文本图标**：`PluginIcon(text = "🐰")` — 简单可靠，推荐
-2. **图片图标**：`PluginIcon(assetName = "icon.png")` — 图片放在 `assets/icon.png`
-
-> ⚠️ **重要**：`assetName` **不能包含路径分隔符**（如 `emojis/icon.png`）！
-> 宿主应用的 `ExtensionManager.extractPluginIcon()` 在提取图标时，会将 assetName 拼接为路径
-> `plugin_icons/{pluginId}_{assetName}`，如果包含 `/` 会产生子目录，但宿主未创建父目录，
-> 导致 `FileNotFoundException`。**请始终将图标文件放在 `assets/` 根目录，使用纯文件名**。
-
-### PluginContext 及其他模型
-
-```kotlin
-data class PluginContext(
-    val application: Application,    // 宿主 Application
-    val pluginInfo: PluginInfo,      // 插件信息
-    val pluginId: String = pluginInfo.id
-) {
-    // 注意：无 dataDir 字段，需要文件操作时使用 application.filesDir
-}
-
-data class PluginInfo(
-    val id: String,                  // 插件 ID（即 applicationId）
-    val name: String,
-    val iconResId: Int,
-    val versionCode: Long,
-    val versionName: String,
-    val path: String,                // 插件 APK 文件路径
-    val entryClass: String,          // 入口类完整类名
-    val description: String,
-    val type: String = "unknown",
-    val enabled: Boolean = true,
-    val installTime: Long = System.currentTimeMillis(),
-    val nativeLibPath: String? = null,
-    val providers: List<ProviderInfo> = emptyList(),
-    val minHostVersion: String? = null,   // 支持的宿主最低版本（可选）
-    val maxHostVersion: String? = null    // 支持的宿主最高版本（可选）
-)
-```
-
-## 安装和测试
-
-### 构建
+用仓库中的脚本打包（对 `plugins/` 下每个含 `manifest.yaml` 的目录生成 `<目录名>-<version>.xipk`）：
 
 ```bash
-./gradlew assembleDebug
+# Windows
+powershell -File scripts/build-plugins.ps1
+
+# macOS / Linux
+bash scripts/build-plugins.sh
 ```
+
+**关键点**：zip 条目名必须用 `/` 路径分隔符（不能用 `\`），否则 Android 侧解压时 `resources/` 会错乱。`build-plugins.sh` 内置 python3 脚本处理；`.ps1` 手动构造 zip 条目规避 `Compress-Archive` 的反斜杠问题。
+
+打包产物输出到 `build/plugin-release/`，并复制到 `app/src/main/assets/plugins/` 随 APK 内置（debug 构建启动时自动安装）。
+
+### 安装方式
+
+1. **插件市场** - 「扩展商店 → 插件」标签页浏览下载（自动标记为官方信任）
+2. **本地文件导入** - 插件管理页「从文件安装插件」（标记为第三方信任）
+3. **浏览器导入** - 通过无线导入页面上传 `.xipk`
 
 ### 清除插件数据（调试用）
 
 ```bash
-./gradlew clearPlugins      # 清除插件文件
+./gradlew clearPlugins      # 清除设备上的插件文件与注册表
 ./gradlew uninstallApp      # 完全卸载主应用
-```
-
-### 安装顺序
-
-```bash
-# 1. 卸载旧版本
-adb uninstall com.kingzcheung.xime
-adb uninstall com.example.kime.plugin.myplugin
-
-# 2. 安装新版本
-adb install app/build/outputs/apk/debug/Xime-xxx.apk
-adb install my-plugin/build/outputs/apk/debug/my-plugin-xxx.apk
-```
-
-## 常见问题
-
-### 1. ClassNotFoundException 或 NoSuchMethodError
-
-**原因**：
-- 插件使用了宿主应用未保留的 Kotlin stdlib 方法（如 `kotlin.io`、`kotlin.math` 等），R8 裁剪后运行时找不到
-- 插件启用了混淆导致自身类名或方法被重命名
-
-**解决**：
-1. 禁用混淆：`isMinifyEnabled = false`（推荐）
-2. 检查代码是否使用了[不可用的 Kotlin stdlib 包](#宿主应用保留的-kotlin-stdlib-包)，改用 Java 标准库替代
-3. 如需保留特定 Kotlin 方法，可在插件自身添加 ProGuard 规则，但需注意宿主应用不一定包含这些方法
-
-### 2. 插件无法发现
-
-**原因**：AndroidManifest intent-filter 配置错误
-
-**解决**：检查 `<action android:name="com.kingzcheung.xime.plugin.EXTENSION" />`
-
-### 3. 插件加载失败
-
-**原因**：插件入口类路径错误
-
-**解决**：
-- 检查 `plugin.entryClass` 元数据
-- 确保类名完整：`com.example.plugin.MyPlugin`
-
-### 4. 表情数据未显示
-
-**原因**：
-- `getEmojis()` 返回空列表
-- 主应用未启用插件
-- 插件 APK 更新后宿主仍使用旧缓存
-
-**解决**：
-- 检查 `loadEmojis()` 实现
-- 在主应用设置中启用插件
-- 更新插件时务必递增 `versionCode`（见下方说明）
-
-### 5. NoSuchMethodError（EmojiItem 构造函数不匹配）
-
-```
-java.lang.NoSuchMethodError: No direct method <init>
-(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;
-Ljava/lang/String;Ljava/lang/String;)V
-in class Lcom/kingzcheung/xime/plugin/core/api/EmojiItem;
-```
-
-**原因**：插件本地定义的 `EmojiItem` 与宿主应用的版本不同。
-宿主应用的 `EmojiItem` 包含 6 个字段（含 `displayConfig`），
-如果本地只定义 5 个字段，编译时生成 5 参数构造器调用，
-运行时宿主类加载器找不到匹配的构造器。
-
-**解决**：确保本地 API 接口定义与宿主 `plugin-core` 源码一致。
-
-```kotlin
-// 正确：6 个字段
-data class EmojiItem(
-    val id: String,
-    val displayText: String,
-    val insertText: String,
-    val imageUrl: String?,
-    val category: String,
-    val displayConfig: EmojiDisplayConfig? = null  // 别忘了这个！
-)
-```
-
-### 6. 插件更新后不生效（缓存问题）
-
-**原因**：`PluginManager` 在 `installPlugin()` 中将插件 APK 复制到
-宿主数据目录（`files/plugins/{pluginId}/base.apk`）。如果 `versionCode` 未递增，
-宿主认为无需更新，继续使用旧缓存。
-
-**解决**：
-- 每次更新插件时 **必须递增 `versionCode`**
-- 或者先卸载再安装：`adb uninstall` + `adb install`
-- 调试时可在宿主应用中清除插件数据
-
-```bash
-# 彻底重装（推荐调试用）
-adb uninstall com.example.plugin.myplugin
-adb install app/build/outputs/apk/debug/my-plugin.apk
-# 然后重启宿主应用
 ```
 
 ## 现有插件示例
 
-| 插件 | 类型 | 特点 |
-|------|------|------|
-| funasr-asr | SPEECH | 阿里百炼 FunAsr 在线语音识别（WebSocket 流式，自带标点） |
-| kaomoji | EMOJI | 预定义颜文字数据 |
-| meme-bunny | EMOJI | 恶搞兔表情包（从 APK assets 加载） |
+| 插件 | 类型 | 特点 | 是否内置 |
+|------|------|------|---------|
+| kaomoji | emoji | 174 个颜文字表情，3 列布局，支持搜索 | ✅ 随 APK 内置 |
+| meme-bunny | emoji | 恶搞兔表情包（6 张图片），`resources/emojis/` | ✅ 随 APK 内置 |
+| funasr-asr | speech | 阿里百炼 FunAsr 在线识别（WebSocket 流式，自带标点） | 插件市场获取 |
+| volc-asr | speech | 火山引擎流式识别（二进制协议 + gzip） | ✅ 随 APK 内置 |
+
+## 常见问题
+
+### 1. 插件无法发现或激活
+
+- 检查 `manifest.yaml` 的 `id` 是否唯一且为反向域名风格
+- 检查 `entry` 指向的脚本是否存在，且 `return` 了导出表
+- 检查宿主版本是否满足 `minHostVersion` / `maxHostVersion`
+
+### 2. 表情数据未显示
+
+- `getEmojis()` 是否返回了正确的 table 结构（`id` / `text` / `category`）
+- 插件是否已启用（表情插件为多选启用）
+- 图片表情需确认 `host.resource.path()` 返回非 nil
+
+### 3. WebSocket 连接失败
+
+- 检查 `lastError()` 返回的原因
+- 确认域名已声明在 `network.hosts` 中
+- 确认插件已在插件中心为该域名授权
+- 第三方插件无法连接未授权域名
+
+### 4. 配置不生效
+
+- 检查配置 key 与 `getSettingsSchema()` 中声明的一致
+- `secret` 字段未填写时保存会被拒绝（`required` 校验）
 
 ## 参考文档
 
 - [plugin-core 源码](https://github.com/ximeiorg/Xime/tree/main/plugin-core) - 核心实现
-- [现有插件实现](https://github.com/ximeiorg/Xime/tree/main/plugins) - 学习最佳实践
+- [现有插件实现](https://github.com/ximeiorg/Xime/tree/main/plugins) - 学习最佳实践（funasr-asr / volc-asr / kaomoji / meme-bunny）
+- [构建脚本](https://github.com/ximeiorg/Xime/tree/main/scripts) - `build-plugins.ps1` / `build-plugins.sh`
 
 ## 版本兼容
 
-- 插件 compileSdk 应与主应用一致（36）
-- 插件 targetSdk 应 ≥ 主应用 minSdk（28）
-- Kotlin 版本应与主应用一致（2.3.20）
+- 插件包要求 Xime **v2.6.0+**（Lua 插件架构）
+- 建议声明 `minHostVersion` 为插件依赖的宿主 API 起始版本

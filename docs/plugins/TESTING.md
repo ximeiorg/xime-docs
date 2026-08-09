@@ -7,18 +7,40 @@
 ### 测试类型
 
 #### 1. 单元测试 (Unit Tests)
-- **位置**: `app/src/test/java/`
+- **位置**: `app/src/test/java/`、`plugin-core/src/test/java/`
 - **目的**: 测试纯 Kotlin 逻辑，不依赖 Android 框架
 - **适用场景**: 
   - 工具类方法测试
   - 业务逻辑测试
   - 算法测试
+  - Lua 插件沙箱与适配器测试
 
 **示例测试类**:
 - `SchemaConfigHelperTest` - 测试配置解析逻辑
 - `ExtensionManagerTest` - 测试插件管理逻辑
+- `LuaScriptRuntimeTest` - 测试 Lua 沙箱运行环境
+- `LuaAsrPluginTest` - 测试 ASR 插件适配器
+- `LuaMemeBunnyTest` / `LuaVolcAsrPluginTest` - 测试真实插件 Lua 脚本
+- `ManifestParseTest` - 测试插件 manifest 解析
+- `VersionUtilTest` - 测试插件宿主版本兼容性检查
+- `PluginSignatureUtilTest` - 测试插件信任等级判定
+- `NetworkPolicyTest` - 测试插件网络策略
 
-#### 2. 仪器测试 (Instrumented Tests)
+#### 2. T9 核心 C++ 单元测试
+- **位置**: `app/src/main/jni/librime-t9/test/`
+- **框架**: GoogleTest
+- **目的**: 测试 T9 输入法 C++ 插件核心算法（缓冲区、状态机、撤销模型、右侧选词、拼音映射、音节对齐等）
+- **运行方式**:
+
+```bash
+# 在 app/src/main/jni/ 下执行（需要 CMake + gtest）
+cd app/src/main/jni/librime-t9
+./run_t9_tests.sh
+```
+
+共 11 个测试文件、约 266 个用例，覆盖 `t9_buffer`、`t9_state_machine`、`t9_undo_model`、`t9_right_commit_handler`、`t9_pinyin_map`、`t9_syllable_alignment`、`t9_patch_utils` 等模块。
+
+#### 3. 仪器测试 (Instrumented Tests)
 - **位置**: `app/src/androidTest/java/`
 - **目的**: 测试与 Android 框架交互的组件
 - **运行速度**: 较慢（需要在设备/模拟器上运行）
@@ -32,7 +54,7 @@
 - `RimeEngineTest` - 测试 RIME 引擎初始化和基本操作
 - `ExtensionManagerInstrumentedTest` - 测试插件管理器的实际加载
 
-#### 3. UI 测试 (UI Tests)
+#### 4. UI 测试 (UI Tests)
 - **位置**: `app/src/androidTest/java/`
 - **框架**: Jetpack Compose Testing
 - **目的**: 测试 UI 组件的行为和外观
@@ -61,9 +83,18 @@
 ```bash
 # 单元测试
 ./gradlew test --tests "com.kingzcheung.xime.settings.SchemaConfigHelperTest"
+./gradlew :plugin-core:test --tests "com.kingzcheung.xime.plugin.core.lua.LuaAsrPluginTest"
 
 # 仪器测试
 ./gradlew connectedAndroidTest --tests "com.kingzcheung.xime.rime.RimeEngineTest"
+```
+
+### 运行 T9 C++ 测试
+```bash
+cd app/src/main/jni/librime-t9
+./run_t9_tests.sh              # 构建并运行全部测试
+./run_t9_tests.sh -f T9UndoModel*   # 运行指定测试（gtest filter）
+./run_t9_tests.sh --no-build   # 跳过构建，直接运行
 ```
 
 ### 运行所有测试
