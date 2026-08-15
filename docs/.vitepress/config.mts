@@ -1,10 +1,36 @@
 import { defineConfig } from 'vitepress'
+import { load as loadYaml } from 'js-yaml'
+
+const PLUGIN_INDEX_URL = 'https://index.ximei.me/plugins/index.yaml'
+
+let pluginIndexPromise: Promise<any> | null = null
+
+function fetchPluginIndex(): Promise<any> {
+  if (!pluginIndexPromise) {
+    pluginIndexPromise = fetch(PLUGIN_INDEX_URL)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        return res.text()
+      })
+      .then((text) => loadYaml(text))
+      .catch(() => null)
+  }
+  return pluginIndexPromise
+}
 
 export default defineConfig({
   title: "Xime 输入法",
   description: "基于 Rime 引擎构建的 Android 输入法",
   lang: 'zh-CN',
   base: '/',
+  async transformPageData(pageData) {
+    if (pageData.relativePath !== 'plugin-list.md') return
+    const index = await fetchPluginIndex()
+    if (!index) return
+    return {
+      frontmatter: { ...pageData.frontmatter, pluginIndex: index }
+    }
+  },
   vite: {
     server: {
       host: '127.0.0.1',
@@ -15,7 +41,7 @@ export default defineConfig({
     nav: [
       { text: '首页', link: '/' },
       { text: '使用文档', link: '/usage' },
-      { text: '插件', link: '/plugins/' },
+      { text: '插件', link: '/plugin-list' },
       { text: '更新日志', link: '/changelog' },
       { text: '下载', link: 'https://github.com/ximeiorg/Xime/releases' }
     ],
