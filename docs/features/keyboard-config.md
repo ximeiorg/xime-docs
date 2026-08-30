@@ -561,19 +561,19 @@ earth: { tap: { label: "@language", action: "toggle_ascii" } }
 
 ## 参考示例
 
-应用源码的 [`docs/config_examples/`](https://github.com/kingzcheung/Xime/tree/main/docs/config_examples) 目录下提供了多种场景的独立示例 YAML 文件，可直接下载使用或作为自定义配置的参考：
+应用源码的 [`docs/config_examples/`](https://github.com/kingzcheung/Xime/tree/main/docs/config_examples) 目录按场景提供了多个示例配置，每个子目录内各有一份可直接使用的 `xime.custom.yaml`：
 
-| 文件 | 说明 |
-|------|------|
-| [`xime.full_example.yaml`](https://github.com/kingzcheung/Xime/blob/main/docs/config_examples/xime.full_example.yaml) | 完整全键盘配置（含所有手势、配色、阴影） |
-| [`xime.wubi_compact.yaml`](https://github.com/kingzcheung/Xime/blob/main/docs/config_examples/xime.wubi_compact.yaml) | 五笔字根 + compact 布局示例 |
-| [`xime.flypy.yaml`](https://github.com/kingzcheung/Xime/blob/main/docs/config_examples/xime.flypy.yaml) | 小鹤双拼韵母提示示例 |
-| [`xime.cangjie.yaml`](https://github.com/kingzcheung/Xime/blob/main/docs/config_examples/xime.cangjie.yaml) | 仓颉输入法按键配置示例 |
-| [`xime.shortcut.yaml`](https://github.com/kingzcheung/Xime/blob/main/docs/config_examples/xime.shortcut.yaml) | 快捷操作按键配置示例 |
-| [`xime.ms.double.yaml`](https://github.com/kingzcheung/Xime/blob/main/docs/config_examples/xime.ms.double.yaml) | 微软双拼方案配置示例（含 `layout.rows` 自定义键盘行布局） |
-| [`xime.theme_example.yaml`](https://github.com/kingzcheung/Xime/blob/main/docs/config_examples/xime.theme_example.yaml) | 主题配色自定义示例 |
+| 示例目录 | 说明 | 重点演示 |
+|----------|------|----------|
+| [`full/`](https://github.com/kingzcheung/Xime/tree/main/docs/config_examples/full) | 完整全键盘配置，适合作为自定义起点 | `style` 全局样式、9 套内置配色、`keyboard.colors` / `key` / `shadow` 样式，中英文键盘全部手势（上滑、下滑、长按） |
+| [`wubi_compact/`](https://github.com/kingzcheung/Xime/tree/main/docs/config_examples/wubi_compact) | 五笔字根 + compact 布局 | `button_layout: compact`，下滑显示五笔字根（`action: none` 仅显示不上屏） |
+| [`flypy/`](https://github.com/kingzcheung/Xime/tree/main/docs/config_examples/flypy) | 小鹤双拼方案 | 下滑提示韵母，附带 `keyboard.colors`、`key`、`shadow` 样式配置 |
+| [`cangjie/`](https://github.com/kingzcheung/Xime/tree/main/docs/config_examples/cangjie) | 仓颉输入法按键配置 | `tap` 显示仓颉字根（`label` 显示字根、`value` 上屏字母）、上滑数字、长按带变音符号的相似字母 |
+| [`msdouble/`](https://github.com/kingzcheung/Xime/tree/main/docs/config_examples/msdouble) | 微软双拼方案（v2.5.0+） | `layout.rows` 自定义键盘行布局、`button_layout: compact` |
+| [`shortcut/`](https://github.com/kingzcheung/Xime/tree/main/docs/config_examples/shortcut) | 快捷操作按键（最小示例） | 全选 / 剪切 / 复制 / 粘贴 / 段首段尾等编辑动作绑定下滑，仅含 `keyboard` 段，适合合并进现有配置 |
+| [`theme/`](https://github.com/kingzcheung/Xime/tree/main/docs/config_examples/theme) | 主题配色自定义 | zine 系列 5 套配色，`keyboard_background` 纯色 / 渐变 / 图片背景与 `dark_mode`，仅含 `color_schemes` 段 |
 
-你可以在浏览器中打开这些文件，将内容复制到 `xime.custom.yaml` 中，或直接点击 `Raw` 按钮下载原始文件后通过"浏览器导入"上传。
+使用方式：在浏览器中打开对应目录下的 `xime.custom.yaml`，点击 `Raw` 按钮下载原始文件后，通过「浏览器导入」上传即可；也可以只复制其中需要的配置段（如 `color_schemes`、`keyboard`）合并到自己的 `xime.custom.yaml` 中。
 
 ---
 
