@@ -393,6 +393,50 @@ keyboard:
 | `enabled` | 布尔 | `true` | 是否启用按键阴影 |
 | `elevation` | 整数 | `1` | 阴影高度，单位 dp |
 
+### `keyboard.fonts` — 自定义字体（v2.8.0+）
+
+> **版本要求**：此功能需要 Xime **v2.8.0 及以上版本**。
+
+用于自定义键盘按键、字根、候选项和注释的字体。字体文件需放在设备 `rime/` 目录（或其子目录）下，可通过浏览器导入上传。
+
+**导入字体文件**：打开 `xime app -> 输入方案 -> 浏览器导入`，在浏览器中上传 `.ttf` / `.otf` / `.woff` / `.woff2` 字体文件，会自动保存到 `rime/fonts/` 目录。
+
+```yaml
+keyboard:
+  fonts:
+    key_font: "fonts/MyFont.ttf"            # 按键主字字体
+    key_label_font: "fonts/MyRootFont.ttf"  # 字根/标签字体
+    candidate_font: "fonts/MyCandFont.ttf"  # 候选项字体
+    comment_font: "fonts/MyCommentFont.ttf" # 候选注释字体
+```
+
+#### 字段说明
+
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `key_font` | 字符串 | 空 | 按键主字字体，为空时使用系统默认字体 |
+| `key_label_font` | 字符串 | 空 | 字根/标签字体（按键下滑提示、气泡、长按气泡），为空时默认使用内置 ChaiPUA 字体（支持 CJK 扩展区字符） |
+| `candidate_font` | 字符串 | 空 | 候选项字体，为空时使用系统默认字体 |
+| `comment_font` | 字符串 | 空 | 候选注释（comment/拆分）字体，为空时使用系统默认字体 |
+
+#### 字体路径查找规则
+
+字体配置支持三种路径写法，均以应用数据根目录为基准：
+
+| 写法 | 示例 | 实际查找位置 |
+|------|------|-------------|
+| 绝对路径（以 `/` 开头） | `/fonts/MyFont.ttf` | 应用数据根目录下的 `fonts/` |
+| `rime/` 开头 | `rime/fonts/MyFont.ttf` | 应用数据根目录下的 `rime/fonts/` |
+| 相对路径（含 `/`） | `fonts/MyFont.ttf` | `rime/fonts/`（浏览器导入的默认位置） |
+| 仅文件名 | `MyFont.ttf` | `rime/` 目录（配置文件同目录） |
+
+#### 使用场景
+
+- **键盘显示字根**：形码方案（五笔/仓颉等）在按键上或气泡中显示字根时，可通过 `key_label_font` 指定包含这些字形的字体
+- **候选注释显示拆分**：候选词的编码注释/拆分提示可通过 `comment_font` 指定专用字体
+
+> 字体文件不存在或加载失败时，自动回退到默认字体，不影响输入法使用。
+
 ## `keyboard.keys` — 键盘按键配置
 
 这是全键盘配置的核心部分，每个按键可以定义 4 种手势操作。`qwerty` 对应中文 26 键键盘，`qwerty_en` 对应英文 26 键键盘。
