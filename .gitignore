@@ -1,6 +1,6 @@
 # Dependencies
 node_modules/
-
+.zcode/
 # VitePress build output
 docs/.vitepress/dist
 docs/.vitepress/cache
