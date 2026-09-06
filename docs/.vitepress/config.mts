@@ -1,13 +1,19 @@
 import { defineConfig } from 'vitepress'
 import { load as loadYaml } from 'js-yaml'
 
-const PLUGIN_INDEX_URL = 'https://index.ximei.me/plugins/index.yaml'
+const INDEX_BASE = 'https://index.ximei.me'
 
-let pluginIndexPromise: Promise<any> | null = null
+const INDEX_PAGES: Record<string, { field: string; path: string }> = {
+  'plugin-list.md': { field: 'pluginIndex', path: '/plugins/index.yaml' },
+  'rime-list.md': { field: 'rimeIndex', path: '/rimes/index.yaml' },
+  'model-list.md': { field: 'modelIndex', path: '/models/index.yaml' }
+}
 
-function fetchPluginIndex(): Promise<any> {
-  if (!pluginIndexPromise) {
-    pluginIndexPromise = fetch(PLUGIN_INDEX_URL)
+const indexCache: Record<string, Promise<any>> = {}
+
+function fetchIndex(path: string): Promise<any> {
+  if (!indexCache[path]) {
+    indexCache[path] = fetch(INDEX_BASE + path)
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         return res.text()
@@ -15,7 +21,7 @@ function fetchPluginIndex(): Promise<any> {
       .then((text) => loadYaml(text))
       .catch(() => null)
   }
-  return pluginIndexPromise
+  return indexCache[path]
 }
 
 export default defineConfig({
@@ -24,11 +30,12 @@ export default defineConfig({
   lang: 'zh-CN',
   base: '/',
   async transformPageData(pageData) {
-    if (pageData.relativePath !== 'plugin-list.md') return
-    const index = await fetchPluginIndex()
+    const conf = INDEX_PAGES[pageData.relativePath]
+    if (!conf) return
+    const index = await fetchIndex(conf.path)
     if (!index) return
     return {
-      frontmatter: { ...pageData.frontmatter, pluginIndex: index }
+      frontmatter: { ...pageData.frontmatter, [conf.field]: index }
     }
   },
   vite: {
@@ -41,6 +48,8 @@ export default defineConfig({
     nav: [
       { text: '首页', link: '/' },
       { text: '使用文档', link: '/usage' },
+      { text: '方案', link: '/rime-list' },
+      { text: '模型', link: '/model-list' },
       { text: '插件', link: '/plugin-list' },
       { text: '更新日志', link: '/changelog' },
       { text: '下载', link: 'https://github.com/ximeiorg/Xime/releases' }
@@ -82,7 +91,8 @@ export default defineConfig({
         {
           text: '同步与备份',
           items: [
-            { text: 'WebDAV 同步', link: '/features/webdav-sync' }
+            { text: '云备份', link: '/features/cloud-backup' },
+            { text: 'WebDAV 同步（已移除）', link: '/features/webdav-sync' }
           ]
         },
         {

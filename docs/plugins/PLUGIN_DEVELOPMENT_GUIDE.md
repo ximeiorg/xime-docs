@@ -60,6 +60,7 @@ Xime 采用 **Lua 脚本插件** 架构：插件包（`.xipk`，本质是 zip）
 |------|------|---------|---------|
 | `emoji` | 表情 | 多选（MULTI） | `LuaEmojiPluginAdapter` |
 | `speech` | 语音转文本 | 单选（SINGLE） | `LuaAsrPluginAdapter` |
+| `backup` | 云备份 | 单选（SINGLE） | `LuaBackupPluginAdapter` |
 | `prediction` | 智能预测（预留） | 多选 | `LuaPluginAdapter` |
 | `unknown` / 缺失 | 其他 | 无 | `LuaPluginAdapter` |
 
@@ -100,8 +101,10 @@ my-plugin/
 | `minHostVersion` | String | 可选 | 无 | 宿主最低版本（如 `2.6.0`） |
 | `maxHostVersion` | String | 可选 | 无 | 宿主最高版本 |
 | `network.hosts` | List\<String\> | 可选 | `[]` | 插件声明需要联网的域名 |
+| `capabilities.events` | List\<String\> | 可选 | `[]` | 订阅的下行事件（如 `input_changed` / `text_committed`）。**未声明不建立投递通道** |
+| `capabilities.backup.protocols` | List\<String\> | 可选 | `[]` | 备份插件的传输协议声明（`type: backup` 时使用，如 `["webdav"]`） |
 
-> **注意**：`icon`、`activation`、`capabilities`、`configSchema` 等键出现在示例 manifest 中，但宿主解析器**不消费**这些字段——它们仅为文档性约定。真正的图标来自 Lua 的 `getIcon()`，配置表单来自 Lua 的 `getSettingsSchema()`，激活方式由 `type` 映射。
+> **注意**：`icon`、`activation`、`configSchema` 等键出现在示例 manifest 中，但仅为文档性约定——真正的图标来自 Lua 的 `getIcon()`，配置表单来自 Lua 的 `getSettingsSchema()`，激活方式由 `type` 映射。**`capabilities` 会被宿主解析消费**：`clipboard_sync.protocols` 为剪贴板同步插件的启动前置校验，`events` 为下行事件订阅（见「下行事件」章节）。
 
 示例：
 
@@ -137,6 +140,9 @@ local plugin = {}
 -- 可选生命周期回调
 function plugin.onLoad() end
 function plugin.onUnload() end
+
+-- 可选下行事件回调（需 manifest 声明 capabilities.events，见「下行事件」章节）
+function plugin.onPluginEvent(eventType, payload) end
 
 return plugin
 ```
@@ -258,6 +264,35 @@ return plugin
 
 **连接/协议/缓冲/结果解析全部由 Lua 承载**，宿主只提供通用原语。完整示例可参考 `plugins/funasr-asr/main.lua`（WebSocket 流式 + dashscope 协议）和 `plugins/volc-asr/main.lua`（火山引擎二进制协议 + gzip）。
 
+## backup 类型插件 API
+
+备份插件（`type: backup`）只承载**传输协议**：备份包的生成（zip）与恢复（路径校验落盘）由宿主完成，插件用 `host.http` + `host.crypto` 实现上传/下载/列表/删除，服务器配置由 `getSettingsSchema()` 表单承载（如 WebDAV 的 url/username/password）。
+
+manifest 声明：
+
+```yaml
+type: backup
+activation: single
+capabilities:
+  backup:
+    protocols: ["webdav"]    # 传输协议声明
+network:
+  hosts:
+    - dav.jianguoyun.com     # 或 network.allowCustomHosts: true 允许用户自填服务器
+```
+
+导出函数：
+
+| 函数 | 返回 | 说明 |
+|------|------|------|
+| `pushBackup(args)` | `{ ok, id?, message? }` 或 bool | `args = { name = "远端文件名", archive = "zip 二进制字节流" }` |
+| `pullBackup(id)` | string（zip 字节流）或 nil | 下载备份包 |
+| `listBackups()` | `{ { id, name, createdAt?, size? }, ... }` 或 nil | 按 createdAt 倒序；`id` 为远端标识，恢复/删除时原样回传 |
+| `deleteBackup(id)` | bool | 删除远端备份包 |
+| `testConnection()` | string（错误消息）或 nil | nil 表示连接成功 |
+
+> 完整示例见 `plugins/webdav-backup/main.lua`（PROPFIND 列表、PUT 上传、手写 percent-encode、409/404 自动建目录）。
+
 ## host API（宿主注入的 SDK）
 
 插件可通过全局 `host` 表调用宿主能力：
@@ -274,8 +309,18 @@ host.uuid()                    -- 生成 UUID
 host.bin.int32be(n) / uint32be(n)  -- 大端序 4 字节编码（二进制协议用）
 host.zlib.gzip(bytes) / gunzip(bytes)  -- gzip 压缩/解压
 host.ws.connect(url, headers, callbacks) / sendText / sendBinary / close / getState / lastError
+host.crypto.sha256(bytes) / hmacSha256(key, bytes) / hmacSha1(key, bytes) / hex(bytes) / base64(bytes) / utcTime(format) / epochSeconds()
 host.asr.emitFinal(text) / emitPartial(text) / emitError(msg) / emitState(state)
 ```
+
+### host.crypto（签名/编码原语）
+
+字节在 Lua 中以字符串表示（与 `host.bin` / `host.ws.sendBinary` 一致）：
+
+- `sha256(bytes)` / `hmacSha256(key, bytes)` / `hmacSha1(key, bytes)` — 摘要与 HMAC（如 S3 SigV4 用 hmacSha256，腾讯云 ASR 签名用 hmacSha1）
+- `hex(bytes)` / `base64(bytes)` — 十六进制 / Base64 编码
+- `utcTime("YYYYMMDDTHHMMSSZ")` — 格式化当前 UTC 时间（SigV4 时间戳）
+- `epochSeconds()` — 当前 UNIX 时间戳（秒）；沙箱剥离了 `os` 库，签名用时间戳经此获取
 
 ### host.ws（WebSocket）
 
@@ -374,8 +419,10 @@ bash scripts/build-plugins.sh
 |------|------|------|---------|
 | kaomoji | emoji | 174 个颜文字表情，3 列布局，支持搜索 | ✅ 随 APK 内置 |
 | meme-bunny | emoji | 恶搞兔表情包（6 张图片），`resources/emojis/` | ✅ 随 APK 内置 |
-| funasr-asr | speech | 阿里百炼 FunAsr 在线识别（WebSocket 流式，自带标点） | 插件市场获取 |
-| volc-asr | speech | 火山引擎流式识别（二进制协议 + gzip） | ✅ 随 APK 内置 |
+| funasr-asr | speech | 阿里百炼 FunAsr 在线识别（WebSocket 流式，自带标点） | ✅ 随 APK 内置 |
+| volc-asr | speech | 火山引擎流式识别（二进制协议 + gzip） | 插件市场获取 |
+| tencent-asr | speech | 腾讯云实时语音识别 V2（HMAC-SHA1 签名 + 句子流式结果） | 插件市场获取 |
+| webdav-backup | backup | WebDAV 云备份传输（PROPFIND/PUT，自动建目录） | 插件市场获取 |
 
 ## 常见问题
 

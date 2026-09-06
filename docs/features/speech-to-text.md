@@ -57,8 +57,9 @@ v2.6.0 起内置离线语音识别能力，识别在本地独立进程中完成�
 |------|--------|------|
 | FunAsr | 阿里百炼 | WebSocket 流式，自带标点，高准确率 |
 | Volc ASR | 火山引擎 | WebSocket 流式二进制协议，支持中间结果 |
+| Tencent ASR | 腾讯云 | 实时语音识别 V2（WebSocket），支持中英粤及 30 种方言、说话人分离引擎、临时热词表 |
 
-> kaomoji、meme-bunny、volc-asr 插件随 APK 内置；funasr-asr 插件可在「扩展商店 → 插件」中下载。
+> kaomoji、meme-bunny、funasr-asr 插件随 APK 内置；volc-asr、tencent-asr 插件可在「扩展商店 → 插件」中下载。
 
 ### 启用步骤
 
@@ -86,11 +87,22 @@ v2.6.0 起内置离线语音识别能力，识别在本地独立进程中完成�
 
 ### 配置 Volc ASR 插件
 
-1. 确认 `volc-asr` 插件已启用（随 APK 内置）
+1. 确认 `volc-asr` 插件已启用
 2. 进入「设置 → 语音转文本」
 3. 选择「火山引擎流式语音识别」服务商
 4. 按提示填写 API Key / 鉴权信息
 5. 在插件中心为该插件声明的域名授权（`openspeech.bytedance.com`）
+6. 点击激活
+
+### 配置 Tencent ASR 插件
+
+1. 确认 `tencent-asr` 插件已安装并启用
+2. 前往[腾讯云语音识别控制台](https://console.cloud.tencent.com/asr)开通语音识别服务，并在「API 密钥管理」页面获取 **AppID / SecretId / SecretKey**
+3. 进入「设置 → 语音转文本」，选择「腾讯云实时语音识别」服务商，填写三要素
+4. 可选配置：
+   - **引擎模型**：默认 `16k_zh_en_2.0`（中英粤 + 30 种方言）；如需说话人分离，改为 `16k_zh_en_speaker_2.0`
+   - **临时热词表**：格式 `热词|权重`，多个用英文逗号分隔（如 `腾讯云|10,语音识别|5`），提升专有名词识别率
+5. 在插件中心为该插件声明的域名授权（`asr.cloud.tencent.com`）
 6. 点击激活
 
 ## 使用方法
