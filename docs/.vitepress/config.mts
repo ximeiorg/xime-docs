@@ -51,6 +51,7 @@ export default defineConfig({
       { text: '方案', link: '/rime-list' },
       { text: '模型', link: '/model-list' },
       { text: '插件', link: '/plugin-list' },
+      { text: '帮助', link: '/faq' },
       { text: '更新日志', link: '/changelog' },
       { text: '下载', link: 'https://github.com/ximeiorg/Xime/releases' }
     ],

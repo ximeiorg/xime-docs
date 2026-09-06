@@ -1037,6 +1037,154 @@ html.x-home-view.x-nav-scrolled .VPNavBar {
   flex-wrap: wrap;
 }
 
+/* ===== 帮助中心（视频 + FAQ） ===== */
+.xfq-video-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+.xfq-video-card {
+  padding: 0.9rem;
+}
+.xfq-video-frame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+  border: 1px solid var(--x-line);
+}
+.xfq-video-frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.xfq-video-info {
+  padding: 0.9rem 0.4rem 0.4rem;
+}
+.xfq-video-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--x-text-1);
+  line-height: 1.5;
+  margin-top: 0.55rem;
+}
+
+.xfq-tools {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.1rem;
+  margin-bottom: 1.8rem;
+}
+.xfq-search {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: min(420px, 100%);
+  padding: 0.6rem 1.1rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--x-line);
+  color: var(--x-text-2);
+  transition: border-color 0.25s ease;
+}
+.xfq-search:focus-within {
+  border-color: rgba(168, 143, 240, 0.55);
+}
+.xfq-search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--x-text-1);
+  font-size: 0.92rem;
+}
+.xfq-search input::placeholder {
+  color: var(--x-text-2);
+}
+
+.xfq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+.xfq-item {
+  padding: 0;
+}
+.xfq-question {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
+  padding: 1.1rem 1.4rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  color: var(--x-text-1);
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+.xfq-cat {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--x-brand);
+  background: rgba(168, 143, 240, 0.12);
+  border: 1px solid rgba(168, 143, 240, 0.25);
+  border-radius: 999px;
+  padding: 0.12rem 0.6rem;
+}
+.xfq-q-text {
+  flex: 1;
+  min-width: 0;
+}
+.xfq-arrow {
+  flex-shrink: 0;
+  color: var(--x-text-2);
+  transition: transform 0.3s ease;
+}
+.xfq-item.x-open .xfq-arrow {
+  transform: rotate(180deg);
+  color: var(--x-brand);
+}
+.xfq-answer-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s ease;
+}
+.xfq-item.x-open .xfq-answer-wrap {
+  grid-template-rows: 1fr;
+}
+.xfq-answer {
+  overflow: hidden;
+  min-height: 0;
+  padding: 0 1.4rem;
+}
+.xfq-item.x-open .xfq-answer {
+  padding-bottom: 1.2rem;
+}
+.xfq-answer p {
+  margin: 0 0 0.6rem;
+  font-size: 0.9rem;
+  color: var(--x-text-2);
+  line-height: 1.75;
+}
+.xfq-answer .xidx-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.xfq-answer-links {
+  display: flex;
+  gap: 1.2rem;
+  flex-wrap: wrap;
+}
+
 /* ===== Footer gap ===== */
 .x-footer-gap {
   height: 1px;
@@ -1088,6 +1236,9 @@ html.x-home-view.x-nav-scrolled .VPNavBar {
   .x-features-grid { grid-template-columns: 1fr; }
   .x-schemes-grid { grid-template-columns: 1fr; }
   .xidx-grid { grid-template-columns: 1fr; }
+  .xfq-video-grid { grid-template-columns: 1fr; }
+  .xfq-question { padding: 1rem; align-items: flex-start; }
+  .xfq-cat { margin-top: 0.1rem; }
   .xidx-steps { grid-template-columns: 1fr; }
   .xidx-hero-inner { padding: 4rem 1rem 2.5rem; }
   .xidx-section { padding: 2.5rem 1rem; }
