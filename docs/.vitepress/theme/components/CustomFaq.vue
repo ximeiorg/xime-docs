@@ -116,12 +116,8 @@
           </button>
           <div class="xfq-answer-wrap">
             <div class="xfq-answer">
-              <p>{{ f.a }}</p>
+              <div class="xfq-md" v-html="f.html"></div>
               <div class="xfq-answer-links">
-                <a v-if="f.video" class="xidx-link" href="#videos">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                  观看视频演示
-                </a>
                 <a v-if="f.linkHref" class="xidx-link" :href="f.linkHref">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
                   {{ f.linkText }}
@@ -149,9 +145,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useImmersivePage, spotlightMove } from '../immersive'
-import { videos, faqs, faqCategories } from '../faqData'
+import { videos } from '../faqVideos'
+import { data as faqs } from '../faq.data'
 
 useImmersivePage()
+
+const faqCategories = [...new Set(faqs.map((f) => f.category))]
 
 const active = ref('all')
 const keyword = ref('')
@@ -161,7 +160,7 @@ const filtered = computed(() =>
   faqs.filter((f) => {
     if (active.value !== 'all' && f.category !== active.value) return false
     const kw = keyword.value.trim()
-    if (kw && !(f.q + f.a).toLowerCase().includes(kw.toLowerCase())) return false
+    if (kw && !(f.q + f.text).toLowerCase().includes(kw.toLowerCase())) return false
     return true
   })
 )

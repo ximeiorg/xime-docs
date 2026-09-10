@@ -38,6 +38,8 @@ export default defineConfig({
   description: "基于 Rime 引擎构建的 Android 输入法",
   lang: 'zh-CN',
   base: '/',
+  // faq-items/ 下的 md 是 FAQ 页的数据源(经 content loader 收集),不作为独立页面构建
+  srcExclude: ['**/faq-items/**'],
   async transformPageData(pageData) {
     const conf = INDEX_PAGES[pageData.relativePath]
     if (!conf) return
