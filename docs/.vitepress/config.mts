@@ -9,11 +9,19 @@ const INDEX_PAGES: Record<string, { field: string; path: string }> = {
   'model-list.md': { field: 'modelIndex', path: '/models/index.yaml' }
 }
 
-const indexCache: Record<string, Promise<any>> = {}
+const indexCache: Record<string, { promise: Promise<any>; time: number }> = {}
+
+// 缓存 60 秒：远程索引更新后无需重启 dev server 即可拿到新数据
+const INDEX_TTL_MS = 60_000
 
 function fetchIndex(path: string): Promise<any> {
-  if (!indexCache[path]) {
-    indexCache[path] = fetch(INDEX_BASE + path)
+  const cached = indexCache[path]
+  if (cached && Date.now() - cached.time < INDEX_TTL_MS) {
+    return cached.promise
+  }
+  const entry = {
+    time: Date.now(),
+    promise: fetch(INDEX_BASE + path)
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         return res.text()
@@ -21,7 +29,8 @@ function fetchIndex(path: string): Promise<any> {
       .then((text) => loadYaml(text))
       .catch(() => null)
   }
-  return indexCache[path]
+  indexCache[path] = entry
+  return entry.promise
 }
 
 export default defineConfig({

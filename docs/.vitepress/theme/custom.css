@@ -85,6 +85,22 @@ html.x-home-view .DocSearch-Button-Key {
 html.x-home-view .DocSearch-Search-Icon {
   color: rgba(233, 236, 255, 0.6);
 }
+/* 手机端搜索按钮：固定为正圆，避免被拉伸变形 */
+@media (max-width: 768px) {
+  html.x-home-view .DocSearch-Button {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    padding: 0;
+    border-radius: 50%;
+    justify-content: center;
+  }
+  html.x-home-view .DocSearch-Button .DocSearch-Button-Container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
 /* 滚动后：深色毛玻璃导航条 */
 html.x-home-view .VPNavBar {
   position: fixed;
@@ -697,6 +713,7 @@ html.x-home-view.x-nav-scrolled .VPNavBar {
   position: relative;
   font-size: 2rem;
   font-weight: 800;
+  line-height: 1.35;
   color: var(--x-text-1);
   margin-bottom: 0.8rem;
 }
@@ -1215,7 +1232,7 @@ html.x-home-view.x-nav-scrolled .VPNavBar {
     flex-direction: column;
     text-align: center;
     gap: 3rem;
-    padding-top: 3rem;
+    padding-top: calc(var(--vp-nav-height, 64px) + 2.5rem);
     padding-bottom: 4.5rem;
   }
   .x-hero-text { max-width: none; }
@@ -1240,7 +1257,7 @@ html.x-home-view.x-nav-scrolled .VPNavBar {
   .xfq-question { padding: 1rem; align-items: flex-start; }
   .xfq-cat { margin-top: 0.1rem; }
   .xidx-steps { grid-template-columns: 1fr; }
-  .xidx-hero-inner { padding: 4rem 1rem 2.5rem; }
+  .xidx-hero-inner { padding: calc(var(--vp-nav-height, 64px) + 2.5rem) 1rem 2.5rem; }
   .xidx-section { padding: 2.5rem 1rem; }
   .xidx-actions, .xidx-more { flex-direction: column; align-items: center; }
   .xidx-actions .x-btn, .xidx-more .x-btn { width: 100%; justify-content: center; }
@@ -1250,5 +1267,7 @@ html.x-home-view.x-nav-scrolled .VPNavBar {
   .x-hero-shot { width: 210px; }
   .x-phone-halo { width: 260px; height: 260px; }
   .x-scroll-hint { display: none; }
-  .x-cta-card { padding: 3rem 1.4rem; }
+  .x-cta-card { padding: 4rem 1.4rem; }
+  .x-cta-title { font-size: 1.55rem; line-height: 1.4; }
+  .x-cta-glow { width: 300px; height: 150px; top: -110px; }
 }
