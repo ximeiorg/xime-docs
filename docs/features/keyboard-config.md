@@ -242,7 +242,7 @@ keyboard_background:
 
 ## `keyboard` — 键盘配置
 
-`keyboard` 包含五个子部分：
+`keyboard` 包含六个子部分：
 
 | 子项 | 说明 |
 |------|------|
@@ -251,6 +251,7 @@ keyboard_background:
 | `shadow` | 按键阴影配置（可选） |
 | `qwerty` | 中文键盘（26 键）按键定义 |
 | `qwerty_en` | 英文键盘（26 键）按键定义 |
+| `qwerty_14` / `qwerty_17` / `qwerty_18` | 合并键布局（拼音 14/17/18 键方案专用，v2.8.4+） |
 
 ### `keyboard.qwerty.button_layout` — 按键布局模式（v2.5.0-beta10+）
 
@@ -462,6 +463,54 @@ keyboard:
 - 未配置时使用内置默认值（`，。？！`）
 - 在 `xime.custom.yaml` 中写同路径的 `side_symbols` 即可覆盖整个列表
 - 每项为单个符号或字符串，点击即上屏
+
+### `keyboard.qwerty_14` / `qwerty_17` / `qwerty_18` — 合并键布局（v2.8.4+）
+
+> **版本要求**：此功能需要 Xime **v2.8.4 及以上版本**。
+
+为拼音 14 键 / 17 键 / 18 键方案提供的专用键盘布局。选用对应方案时自动启用对应布局，无需额外配置；英文键盘不受影响（切换英文后仍是标准 26 键）。
+
+#### 合并语法
+
+`layout.rows` 的行元素支持嵌套子数组，子数组内的字母合并在同一个键，每行键数变少、按键自然更宽（行内等宽）：
+
+```yaml
+layout:
+  rows:
+    - [[q, w], [e, r], [t, y], [u, i], [o, p]]
+    - ...
+```
+
+合并键在 `keys` 中的 id 为组内字母拼接（如 `qw`、`er`）：
+
+- `tap`：`label` 显示组内字母，`value` 固定为组内第一个字母（代表字母），Rime 侧由方案的拼写运算靠词库消歧
+- `swipe_up`：前 10 个键按行序输出数字 1-0，其余键沿用 26 键同字母的符号习惯
+- `long_press`：气泡保留组内字母的精确输入作为辅助
+
+#### 内置默认布局
+
+| section | 对应方案 | 分组 |
+|---------|----------|------|
+| `qwerty_14` | `pinyin_14jian` | qw/er/ty/ui/op、as/df/gh/jk/l、zx/cv/bn/m |
+| `qwerty_17` | `pinyin_17jian` | we/rt/yu/op、sd/fg/jk、xc/bn |
+| `qwerty_18` | `pinyin_18jian` | we/rt/io、sd/fg/jk、xc/bn |
+
+> 三个方案的 Rime schema 示例见仓库 [`docs/schemas_examples/`](https://github.com/ximeiorg/Xime/tree/main/docs/schemas_examples) 目录（`pinyin_14jian.schema.yaml` / `pinyin_17jian.schema.yaml` / `pinyin_18jian.schema.yaml`），可作为自制定制方案的参考或直接导入使用。
+
+#### 自定义覆盖
+
+在 `xime.custom.yaml` 中写同名 section 即可覆盖内置默认：
+
+- `layout.rows` 为**整段覆盖**：写了 `rows` 就需要给出完整的三行布局，而不是只写要改的一行
+- `keys` 为**按键级覆盖**：只需写要修改的键，未写的键沿用内置默认；注意覆盖是**整键替换**，该键的 `tap` / `swipe_up` / `long_press` 等手势需要在同一条里完整给出
+
+```yaml
+keyboard:
+  qwerty_18:
+    keys:
+      # 示例：把 jk 键的上滑符号由 "-" 改为 "/"（整键替换，手势需写全）
+      jk: { tap: { label: "jk", value: "j" }, swipe_up: "/", long_press: { display: "bubble", values: ["j", "k", "J", "K"] } }
+```
 
 ## `keyboard.keys` — 键盘按键配置
 
