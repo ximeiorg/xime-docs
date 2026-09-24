@@ -242,16 +242,55 @@ keyboard_background:
 
 ## `keyboard` — 键盘配置
 
-`keyboard` 包含六个子部分：
+`keyboard` 包含以下子部分：
 
 | 子项 | 说明 |
 |------|------|
 | `colors` | 键盘颜色配置（可选） |
 | `key` | 按键样式配置（可选，v2.5.0+） |
 | `shadow` | 按键阴影配置（可选） |
+| `fonts` | 自定义字体配置（可选，v2.8.0+） |
 | `qwerty` | 中文键盘（26 键）按键定义 |
 | `qwerty_en` | 英文键盘（26 键）按键定义 |
 | `qwerty_14` / `qwerty_17` / `qwerty_18` | 合并键布局（拼音 14/17/18 键方案专用，v2.8.4+） |
+| `t9` | 九键（T9）键盘配置（v2.8.0+） |
+| `stroke` | 笔画键盘配置 |
+| `handwriting` | 手写键盘配置 |
+
+### `keyboard.<section>.schemas` — 键盘布局绑定声明（v2.8.6+）
+
+> **版本要求**：此功能需要 Xime **v2.8.6 及以上版本**。
+
+用于声明「哪些输入方案使用该 keyboard section 的键盘布局」。切换方案时，应用按声明加载对应 section 的布局；**未声明绑定的方案一律使用全键盘（26 键）**。
+
+```yaml
+keyboard:
+  qwerty_14:
+    schemas: [pinyin_14jian]
+
+  t9:
+    schemas: [t9_pinyin, t9, wanxiang_t9]
+```
+
+内置绑定声明如下（`xime.yaml`）：
+
+| 键盘 section | 内置声明的方案 |
+|--------------|----------------|
+| `qwerty_14` | `pinyin_14jian` |
+| `qwerty_17` | `pinyin_17jian` |
+| `qwerty_18` | `pinyin_18jian` |
+| `t9` | `t9_pinyin`、`t9`、`wanxiang_t9` |
+| `stroke` | `stroke` |
+| `handwriting` | `handwriting` |
+
+说明：
+
+- **声明是唯一来源**：应用不再按方案 id（如 `14jian`、`t9`）中的关键字猜测布局，未声明的方案一律全键盘；
+- 在 `xime.custom.yaml` 中写 `schemas` 为**追加**语义：在内置声明基础上补充，不会移除内置声明；
+- 同一个方案 id 在多个 section 中声明时，以最后出现的为准；
+- **接入第三方方案**：九键 / 笔画 / 手写方案，在 `xime.custom.yaml` 对应 section 的 `schemas` 中追加方案 id 即可；自定义合并键布局则新增 section（`layout.rows` + `keys` + `schemas`）即可生效，无需等待应用发版。
+
+> **从旧版本升级**：此前版本按方案 id / 名称中的关键字自动识别九键（`t9`）和合并键（`14jian` 等）布局。升级到 v2.8.6+ 后，未在 `xime.yaml` / `xime.custom.yaml` 中声明 `schemas` 的第三方方案将回退为全键盘，需要在 `xime.custom.yaml` 中补充声明。
 
 ### `keyboard.qwerty.button_layout` — 按键布局模式（v2.5.0-beta10+）
 
@@ -307,6 +346,8 @@ keyboard:
 | `rows` | 数组 | 二维数组，每行为一个按键名称数组，按键名称为 `keys` 中定义的键名 |
 
 > 注意：`layout.rows` 只控制按键的排列位置和顺序，按键的具体行为（手势）仍需在 `keys` 中定义。目前第四行（空格、功能键等）暂不受 `layout` 控制。
+>
+> 横屏分体键盘同样使用 `layout.rows`：每行按键前/后各取一半（按键数为奇数时中间键在左右两侧各出现一次），自定义布局在横屏下同样生效。
 
 `qwerty_en` 也支持同样的配置：
 
@@ -442,6 +483,10 @@ keyboard:
 
 > **版本要求**：此功能需要 Xime **v2.8.0 及以上版本**。
 
+#### `schemas` — 方案绑定（v2.8.6+）
+
+声明使用九键布局的输入方案，内置默认为 `[t9_pinyin, t9, wanxiang_t9]`；第三方九键方案在 `xime.custom.yaml` 中追加方案 id 即可，未声明的方案一律全键盘。绑定规则详见上文「`keyboard.<section>.schemas` — 键盘布局绑定声明」。
+
 #### `side_symbols` — 左侧快捷符号栏
 
 自定义九键键盘左侧空闲时显示的快捷符号列表。列表长度不限：不超过 4 个时等分铺满左栏，超过 4 个时可上下滑动。**打字状态下该区域显示拼音候选，不受此配置影响。**
@@ -468,7 +513,7 @@ keyboard:
 
 > **版本要求**：此功能需要 Xime **v2.8.4 及以上版本**。
 
-为拼音 14 键 / 17 键 / 18 键方案提供的专用键盘布局。选用对应方案时自动启用对应布局，无需额外配置；英文键盘不受影响（切换英文后仍是标准 26 键）。
+为拼音 14 键 / 17 键 / 18 键方案提供的专用键盘布局。内置方案通过 `schemas` 声明绑定（v2.8.6+，见上文「键盘布局绑定声明」），选用对应方案时自动启用对应布局；英文键盘不受影响（切换英文后仍是标准 26 键）。
 
 #### 合并语法
 
@@ -495,6 +540,8 @@ layout:
 | `qwerty_17` | `pinyin_17jian` | we/rt/yu/op、sd/fg/jk、xc/bn |
 | `qwerty_18` | `pinyin_18jian` | we/rt/io、sd/fg/jk、xc/bn |
 
+> 上表「对应方案」即各 section 内置的 `schemas` 声明。为其他方案启用合并键布局时，在 `xime.custom.yaml` 中声明 `schemas` 即可（v2.8.6+），无需等待应用发版。
+
 > 三个方案的 Rime schema 示例见仓库 [`docs/schemas_examples/`](https://github.com/ximeiorg/Xime/tree/main/docs/schemas_examples) 目录（`pinyin_14jian.schema.yaml` / `pinyin_17jian.schema.yaml` / `pinyin_18jian.schema.yaml`），可作为自制定制方案的参考或直接导入使用。
 
 #### 自定义覆盖
@@ -503,6 +550,7 @@ layout:
 
 - `layout.rows` 为**整段覆盖**：写了 `rows` 就需要给出完整的三行布局，而不是只写要改的一行
 - `keys` 为**按键级覆盖**：只需写要修改的键，未写的键沿用内置默认；注意覆盖是**整键替换**，该键的 `tap` / `swipe_up` / `long_press` 等手势需要在同一条里完整给出
+- `schemas` 为**追加声明**（v2.8.6+）：为自定义方案接入合并键布局时，在其中声明方案 id（如 `schemas: [my_schema]`）
 
 ```yaml
 keyboard:

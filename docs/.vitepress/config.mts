@@ -116,7 +116,8 @@ export default defineConfig({
             { text: '计算器', link: '/features/calculator' },
             { text: '手写输入', link: '/features/handwriting' },
             { text: '工具栏自定义', link: '/features/toolbar' },
-            { text: '键盘配置自定义', link: '/features/keyboard-config' }
+            { text: '键盘配置自定义', link: '/features/keyboard-config' },
+            { text: '键盘配置自定义（新版 · 功能键）', link: '/features/keyboard-config-v2' }
           ]
         },
         {
