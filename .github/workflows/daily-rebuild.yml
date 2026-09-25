@@ -1,0 +1,24 @@
+# 每日触发 Cloudflare Pages 重新构建，使插件/方案/模型/布局列表保持最新
+# 前置条件：
+# 1. 在 Cloudflare Pages 项目 → Settings → Builds & deployments → Deploy hooks 创建 hook
+# 2. 将 hook URL 存到本仓库的 Actions secret：CF_DEPLOY_HOOK
+name: Daily Rebuild
+
+on:
+  schedule:
+    - cron: '0 21 * * *' # UTC 21:00 = 北京时间次日 05:00
+  workflow_dispatch:
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Cloudflare Pages deploy
+        env:
+          CF_DEPLOY_HOOK: ${{ secrets.CF_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$CF_DEPLOY_HOOK" ]; then
+            echo "::error::secret CF_DEPLOY_HOOK 未配置"
+            exit 1
+          fi
+          curl -fsS -X POST "$CF_DEPLOY_HOOK" -o /dev/null -w "deploy hook HTTP %{http_code}\n"

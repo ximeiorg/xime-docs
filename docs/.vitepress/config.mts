@@ -4,9 +4,10 @@ import { load as loadYaml } from 'js-yaml'
 const INDEX_BASE = 'https://index.ximei.me'
 
 const INDEX_PAGES: Record<string, { field: string; path: string }> = {
-  'plugin-list.md': { field: 'pluginIndex', path: '/plugins/index.yaml' },
+  'plugin-list.md': { field: 'pluginIndex', path: '/plugins/v2/index.yaml' },
   'rime-list.md': { field: 'rimeIndex', path: '/rimes/index.yaml' },
-  'model-list.md': { field: 'modelIndex', path: '/models/index.yaml' }
+  'model-list.md': { field: 'modelIndex', path: '/models/index.yaml' },
+  'layout-list.md': { field: 'layoutIndex', path: '/layouts/index.yaml' }
 }
 
 const indexCache: Record<string, { promise: Promise<any>; time: number }> = {}
@@ -61,6 +62,7 @@ export default defineConfig({
       { text: '使用文档', link: '/usage' },
       { text: '方案', link: '/rime-list' },
       { text: '模型', link: '/model-list' },
+      { text: '布局', link: '/layout-list' },
       { text: '插件', link: '/plugin-list' },
       { text: '帮助', link: '/faq' },
       { text: '更新日志', link: '/changelog' },
@@ -116,8 +118,8 @@ export default defineConfig({
             { text: '计算器', link: '/features/calculator' },
             { text: '手写输入', link: '/features/handwriting' },
             { text: '工具栏自定义', link: '/features/toolbar' },
-            { text: '键盘配置自定义', link: '/features/keyboard-config' },
-            { text: '键盘配置自定义（新版 · 功能键）', link: '/features/keyboard-config-v2' }
+            { text: '键盘配置自定义（旧版）', link: '/features/keyboard-config' },
+            { text: '键盘配置自定义（新版）', link: '/features/keyboard-config-v2' }
           ]
         },
         {
