@@ -179,9 +179,10 @@ v2.6.0 起内置离线语音识别能力，识别在本地独立进程中完成�
 | `AsrInferenceService.kt` | 本地离线识别服务（独立进程） |
 | `PluginAsrBackendAdapter.kt` | 插件 ASR 后端适配器 |
 | `VoiceRecognitionHandler.kt` | 语音识别 UI 处理 |
-| `LuaAsrBackend.kt`（plugin-core） | Lua ASR 后端实现 |
-| `funasr-asr/main.lua`（插件） | FunAsr WebSocket 协议实现 |
-| `volc-asr/main.lua`（插件） | 火山引擎协议实现 |
+| `JsAsrBackend.kt`（plugin-core） | JS ASR 后端实现 |
+| `funasr-asr/main.ts`（插件） | FunAsr WebSocket 协议实现（TypeScript） |
+| `volc-asr/main.ts`（插件） | 火山引擎协议实现（TypeScript） |
+| `tencent-asr/main.ts`（插件） | 腾讯云实时语音识别实现（TypeScript） |
 
 ## 常见问题
 

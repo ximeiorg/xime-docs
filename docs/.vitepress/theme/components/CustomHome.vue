@@ -151,7 +151,7 @@ const features = [
   { icon: '🔧', title: 'Rime 引擎', details: '基于中州韵（Rime）引擎构建，候选精准可靠，词库增量部署，完全开源' },
   { icon: '🎤', title: '语音转文本', details: '内置离线流式识别模型，离线可用不吃字，还可安装 FunAsr、火山引擎等在线语音插件' },
   { icon: '🤖', title: 'AI 智能联想', details: 'Transformer 模型预测联想词，搭配 AI 回复、AI 写作、AI 翻译等插件' },
-  { icon: '😀', title: '表情与插件', details: 'Emoji 多标签页分类，颜文字、表情包等 Lua 插件无限扩展' },
+  { icon: '😀', title: '表情与插件', details: 'Emoji 多标签页分类，颜文字、表情包等脚本插件无限扩展' },
   { icon: '🎨', title: '主题定制', details: '深色/浅色/跟随系统三种模式，多种键盘配色方案，支持导入自定义按键字体' },
   { icon: '✍️', title: '手写找字', details: '支持手写输入，手写反查五笔编码，按键下滑显示字根，边用边学拆字' },
   { icon: '☁️', title: '云备份', details: 'WebDAV 一键备份方案、配置、自造词与插件设置，换机恢复一步到位' }

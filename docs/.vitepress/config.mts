@@ -123,6 +123,7 @@ export default defineConfig({
         {
           text: '关于',
           items: [
+            { text: '插件开发教程', link: '/plugins/PLUGIN_DEV_TUTORIAL' },
             { text: '插件开发指南', link: '/plugins/PLUGIN_DEVELOPMENT_GUIDE' },
             { text: '测试指南', link: '/plugins/TESTING' }
           ]

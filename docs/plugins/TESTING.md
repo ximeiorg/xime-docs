@@ -13,14 +13,14 @@
   - 工具类方法测试
   - 业务逻辑测试
   - 算法测试
-  - Lua 插件沙箱与适配器测试
+  - JS 插件沙箱与适配器测试
 
 **示例测试类**:
 - `SchemaConfigHelperTest` - 测试配置解析逻辑
 - `ExtensionManagerTest` - 测试插件管理逻辑
-- `LuaScriptRuntimeTest` - 测试 Lua 沙箱运行环境
-- `LuaAsrPluginTest` - 测试 ASR 插件适配器
-- `LuaMemeBunnyTest` / `LuaVolcAsrPluginTest` - 测试真实插件 Lua 脚本
+- `JsScriptRuntimeTest` - 测试 JS 沙箱运行环境
+- `JsAsrPluginAdapterTest` / `JsAsrPluginTest` - 测试 ASR 插件适配器
+- `JsKaomojiTest` / `JsMemeBunnyTest` / `JsVolcAsrPluginTest` - 测试真实插件脚本
 - `ManifestParseTest` - 测试插件 manifest 解析
 - `VersionUtilTest` - 测试插件宿主版本兼容性检查
 - `PluginSignatureUtilTest` - 测试插件信任等级判定
@@ -83,7 +83,7 @@ cd app/src/main/jni/librime-t9
 ```bash
 # 单元测试
 ./gradlew test --tests "com.kingzcheung.xime.settings.SchemaConfigHelperTest"
-./gradlew :plugin-core:test --tests "com.kingzcheung.xime.plugin.core.lua.LuaAsrPluginTest"
+./gradlew :plugin-core:test --tests "com.kingzcheung.xime.plugin.core.js.JsAsrPluginTest"
 
 # 仪器测试
 ./gradlew connectedAndroidTest --tests "com.kingzcheung.xime.rime.RimeEngineTest"
@@ -101,6 +101,32 @@ cd app/src/main/jni/librime-t9
 ```bash
 ./gradlew connectedCheck
 ```
+
+## 插件脚本测试（xipm test）
+
+插件作者通常不需要跑整个宿主测试套件：`xipm` 内嵌与真机同款的 QuickJS 引擎和 v3 契约的 mock host，`xipm test` 可直接在本地运行插件的 `main.test.ts`，无需真机或 Node：
+
+```bash
+# 先编译（测试基于 build/plugin-js 下的产物运行）
+cd tools/xime-plugin
+cargo run -- build --all --plugins-dir ../../plugins --out ../../build/plugin-js
+
+# 批量测试（无测试文件的插件跳过）
+cargo run -- test
+# 单插件（也可在插件目录内零参数运行）
+cargo run -- test ../../plugins/my-plugin
+# 无 main.test.ts 时仅做加载冒烟
+cargo run -- test ../../plugins/my-plugin --smoke
+```
+
+测试环境要点：
+
+- 网络 / WS / SSE **必须显式 stub**（`__ximeMock.addHttpResponse` / `addWs` / `addSse`），未注册的请求 reject `E_NETWORK`，绝不真实联网
+- 可断言调用记录：`httpRequests` / `sentWs` / `asrEvents` / `quickSend` / `clipboard`
+- 可控时钟：`__ximeMock.setClock(epochSeconds)`
+- 插件 `console.log/error` 前缀化输出到终端
+
+测试 API 与完整说明见 [插件开发指南](./PLUGIN_DEVELOPMENT_GUIDE#测试) 与 [插件开发教程](./PLUGIN_DEV_TUTORIAL#第-2-步-测试插件)。
 
 ## 测试最佳实践
 

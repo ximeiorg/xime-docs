@@ -10,9 +10,9 @@
     <section class="xidx-hero">
       <div class="xidx-hero-inner">
         <div class="x-section-label">插件中心</div>
-        <div class="xidx-eyebrow">LUA PLUGINS</div>
+        <div class="xidx-eyebrow">TYPESCRIPT PLUGINS</div>
         <h1 class="x-hero-title"><span class="x-title-shine">Xime 插件</span></h1>
-        <p class="xidx-sub">Lua 脚本插件 · 以 .xipk 分发 · 随 Xime v2.6.0+ 使用</p>
+        <p class="xidx-sub">TypeScript 脚本插件 · 以 .xipk 分发 · 随 Xime v3.0.0+ 使用</p>
         <p class="xidx-desc">
           插件可为 Xime 扩展颜文字、表情包、语音识别等能力。可通过「扩展商店」在线安装，或从本地文件导入。
         </p>
