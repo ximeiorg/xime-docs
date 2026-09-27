@@ -326,6 +326,9 @@ space: { width: 3, tap: { action: space }, long_press: { values: [ { action: rep
 
 # shift 上滑清空、下滑撤回
 shift: { tap: { action: command, value: shift_single }, swipe_up: { action: clear_all }, swipe_down: { action: undo_clear } }
+
+# 回车键改为固定换行（不受输入框「发送 / 搜索 / 下一项」等属性影响）
+enter: { width: 1.2, tap: { action: newline, label: "换行" } }
 ```
 
 ---
@@ -364,7 +367,8 @@ qwerty:
 | `toggle_symbols` | 切换符号面板 |
 | `toggle_shift` | 切换大小写 |
 | `delete` | 退格 |
-| `enter` | 回车语义 |
+| `enter` | 回车语义（组合态提交编码；空闲态按输入框 `imeOptions` 执行发送 / 搜索 / 下一项等，或换行） |
+| `newline` | 固定换行（组合态先提交编码，再插入换行；无视输入框的发送 / 搜索等属性） |
 | `space` | 空格语义 |
 | `clear_all` | 上滑清空（撤回最近一次） |
 | `undo_clear` | 下滑撤回 |
