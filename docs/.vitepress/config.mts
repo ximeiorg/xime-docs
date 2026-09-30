@@ -90,7 +90,8 @@ export default defineConfig({
         {
           text: '外观与交互',
           items: [
-            { text: '键盘调节', link: '/features/keyboard-adjustment' }
+            { text: '键盘调节', link: '/features/keyboard-adjustment' },
+            { text: '悬浮键盘', link: '/features/floating-keyboard' }
           ]
         },
         {
