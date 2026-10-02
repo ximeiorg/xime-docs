@@ -92,8 +92,9 @@ keyboard:             # 键盘配置
 ```
 
 > 本文以 `keyboard.qwerty` / `keyboard.qwerty_en` 的 `layout` + `keys` 为核心（新版重点），
-> 通用配置（`metadata` / `xime_index` / `style` / `color_schemes` / 键盘外观 / 字体 / 九键 / 合并键等）
-> 在「[其他配置](#其他配置-与键盘布局无关)」一节，写法与旧版一致。
+> 通用配置（`metadata` / `xime_index` / `style` / `color_schemes` / 键盘外观 / 字体 / 合并键等）
+> 在「[其他配置](#其他配置-与键盘布局无关)」一节，写法与旧版一致；九键的布局与手势自定义见
+> 「`keyboard.t9` — 九键键盘配置」一节。
 
 ---
 
@@ -210,8 +211,6 @@ keyboard:
 
 > **左右滑与移动光标**：在键盘区域横向滑动默认用于移动光标。若某键配置了 `swipe_left` / `swipe_right`，该键上的横向滑动即由按键接管（执行配置动作），不再移动光标；未配置左右滑的键横向滑动仍用于移动光标。字母键、`delete`、`space`、`shift` 等均可配置左右滑。
 
-> `when_composing`（组合态覆盖）与 `sticky`（键级粘滞）已在解析器中支持，界面接入将在后续版本提供。
-
 ### 手势取值格式
 
 **1）字符串简写** —— 按槽位默认动作处理：
@@ -234,8 +233,6 @@ q: { tap: { label: "Q", action: commit, value: "q" } }
 | `value` | 字符串 | 动作参数（commit 的上屏文本、command 的命令名等） |
 | `display` | 字符串 | 静态提示位置：`key` / `bubble` / `both` |
 | `bubble` | 布尔 | 运行时是否弹内容气泡（默认 `true`），与 `display` 无关 |
-| `repeat` | 布尔 | 是否支持长按重复 |
-| `sticky` | 布尔 | 粘滞（预留） |
 
 > `label` 以 `@` 开头表示内置图标，如 `@language`（跟随当前语言显示中/英图标）。
 
@@ -252,7 +249,7 @@ keyboard:
 
 ### `long_press` 统一写法
 
-长按只有一种写法：`{ display?, values: [...] }`。`display` 缺省为 `bubble`（弹气泡滑动选择），设 `key` 则直接画在键面上。
+长按只有一种写法：`{ display?, values: [...] }`。`display` 缺省且只支持 `bubble`（弹气泡滑动选择）；写 `key` / `both` 会被按 `bubble` 处理并告警（长按候选的键面绘制尚未实现）。按键手势（`swipe_up` 等）的 `display` 仍支持 `key` / `bubble` / `both`，两者互不影响。
 
 ```yaml
 # 气泡多项（滑动选择）
@@ -299,8 +296,8 @@ qwerty:
     # shift：单击切单击态、双击锁定（命令值走键盘按键路由）
     shift: { width: 1.4, tap: { action: command, value: shift_single }, double_tap: { action: command, value: shift_caps } }
 
-    # delete：单击删除、长按重复删、上滑清空、下滑撤回、左右滑清空输入
-    delete: { width: 1.4, tap: { action: delete }, long_press: { values: [ { action: delete, repeat: true } ] }, swipe_up: { action: clear_all, label: "上滑清空" }, swipe_down: { action: undo_clear, label: "下滑撤回" }, swipe_left: { action: command, value: clear_composition }, swipe_right: { action: command, value: clear_composition } }
+    # delete：单击删除、长按连续删除（内置行为）、上滑清空、下滑撤回、左右滑清空输入
+    delete: { width: 1.4, tap: { action: delete }, long_press: { values: [ { action: delete } ] }, swipe_up: { action: clear_all, label: "上滑清空" }, swipe_down: { action: undo_clear, label: "下滑撤回" }, swipe_left: { action: command, value: clear_composition }, swipe_right: { action: command, value: clear_composition } }
 
     # ?123：单击切面板，长按弹出「数字 / 常用符号」
     mode_change: { width: 1.2, tap: { action: command, value: mode_change }, long_press: { display: bubble, values: [ { label: number, action: command, value: mode_change_number }, { label: common_symbol, action: command, value: mode_change_common_symbol } ] } }
@@ -362,7 +359,7 @@ qwerty:
 | `undo` | 撤销 |
 | `none` | 无动作，仅显示 |
 | `repeat` | 重复上一次输入 |
-| `switch_route` | 打开面板（`value`: `emoji` / `symbol`） |
+| `switch_route` | 打开面板（`value`: `emoji` / `symbol` / `clipboard`） |
 | `toggle_ascii` | 中 / 英切换 |
 | `toggle_symbols` | 切换符号面板 |
 | `toggle_shift` | 切换大小写 |
@@ -555,7 +552,7 @@ keyboard:
   qwerty_14:
     schemas: [pinyin_14jian]
   t9:
-    schemas: [t9_pinyin, t9, wanxiang_t9]
+    schemas: [t9_pinyin, t9, wanxiang_t9, rime_frost_t9]
 ```
 
 内置绑定声明如下（`xime.yaml`）：
@@ -565,7 +562,7 @@ keyboard:
 | `qwerty_14` | `pinyin_14jian` |
 | `qwerty_17` | `pinyin_17jian` |
 | `qwerty_18` | `pinyin_18jian` |
-| `t9` | `t9_pinyin`、`t9`、`wanxiang_t9` |
+| `t9` | `t9_pinyin`、`t9`、`wanxiang_t9`、`rime_frost_t9` |
 | `stroke` | `stroke` |
 | `handwriting` | `handwriting` |
 
@@ -705,6 +702,70 @@ keyboard:
 
 ### `keyboard.t9` — 九键键盘配置
 
+九键键盘由三部分组成：`layout`（三列布局）、`keys`（数字键手势与键面）、`side_symbols`（左侧快捷符号栏）。方案绑定见上文「`keyboard.<section>.schemas` — 键盘布局绑定声明」，内置默认为 `[t9_pinyin, t9, wanxiang_t9, rime_frost_t9]`。
+
+> 注意：九键不支持 `button_layout`（按键布局模式），固定 standard 键面布局。
+
+#### `layout` — 三列布局（下一版本提供）
+
+九键采用「左列 + 主区 + 右列」的三列结构，未配置时为以下内置默认（与历史布局一致）：
+
+```yaml
+keyboard:
+  t9:
+    layout:
+      left: [candidates, symbol]
+      rows:
+        - ["1", "2", "3"]
+        - ["4", "5", "6"]
+        - ["7", "8", "9"]
+        - [number, space, earth]
+      right: [delete, clear, enter]
+```
+
+- `left` / `right`：左右两列，自上而下排列；`rows`：主区按行，每行一个键 id 列表；
+- `layout` 为**整段覆盖**：写了就需要给出完整的 `left` + `rows` + `right`，不能只写要改的一行或一列。
+
+**键 id 分三类：**
+
+| 类别 | id | 说明 |
+|------|----|------|
+| 数字键 | `"0"` ~ `"9"` | 九键输入键。点按默认走九键数字输入（T9 核心交互），写 `keys.<id>.tap.action` 即可改绑（不写 `action` 保持内置行为）；键面、长按、手势见下文 `keys` |
+| 功能键 | `candidates` / `symbol` / `number` / `space` / `earth` / `delete` / `clear` / `enter` | 组件与行为内置，位置可任意安排；相对宽度用 `keys.<id>.width` 覆盖（默认：`candidates` 3、`space` 1.8、`enter` 2，其余 1） |
+| 自定义键 | 其他任意 id | 行为在 `keys.<id>` 定义：`tap.label` 为键面文字，缺省显示键名、点按提交键名本身；手势与全键盘写法相同 |
+
+其中 `candidates` 是拼音候选面板占位：候选态显示音节，空闲态显示下方 `side_symbols`。
+
+#### `keys` — 数字键手势与键面（下一版本提供）
+
+数字键的键面、长按候选与手势都可自定义，在 `xime.custom.yaml` 的 `keyboard.t9.keys` 同路径覆盖：
+
+```yaml
+keyboard:
+  t9:
+    keys:
+      # 内置默认形态（节选）：键面字母组、长按气泡候选、上滑直接输入键面数字
+      # "2": { tap: { label: "ABC" }, long_press: { display: "bubble", values: ["A", "B", "C"] }, swipe_up: { value: "2", display: "key", bubble: false } }
+
+      # 示例：给 "1" 加长按候选（内置无长按），候选项可用对象形式触发任意动作
+      "1": { tap: { label: "分词" }, long_press: { display: "bubble", values: [ { label: "换输入法", action: command, value: show_ime_picker } ] }, swipe_up: { value: "1", display: "key", bubble: false } }
+
+      # 示例：给 "2" 的下滑绑定复制
+      "2": { tap: { label: "ABC" }, long_press: { display: "bubble", values: ["A", "B", "C"] }, swipe_down: { label: "复制", action: copy, display: key } }
+
+      # 示例：长按 "9" 打开符号面板（不再弹字母气泡）
+      "9": { tap: { label: "WXYZ" }, long_press: { values: [ { label: "符号", action: switch_route, value: symbol } ] }, swipe_up: { value: "9", display: "key", bubble: false } }
+```
+
+要点：
+
+- **键面**：`keys.<id>.tap.label` 覆盖键面字母组（内置：1=分词、2=ABC……9=WXYZ）；
+- **长按**：`keys.<id>.long_press` 为气泡候选（内置 2=A/B/C……9=W/X/Y/Z、"1" 无长按）；配置后每项可用 `action` 触发任意动作，"1" 也能拥有长按候选；
+- **手势**：`swipe_up` / `swipe_down` / `swipe_left` / `swipe_right` 可配；内置默认为上滑直接输入键面数字（无需切数字键盘），下滑未绑定动作；
+- **提示与气泡**：`display` 只管静态提示位置（`key` 画在键面角标、`bubble` 不画键面留给气泡），`bubble` 独立控制运行时是否弹气泡（默认 `true`）。内置上滑为 `display: "key"` + `bubble: false`（数字作角标、拖动不弹气泡），想要拖动气泡自行改为 `bubble: true`；
+- **键级整体替换**：覆盖某个数字键时，键面/长按/手势要在同一条里写全，漏写的字段回退代码内置兜底；
+- 字母值建议加引号：YAML 会把裸的 `Y` / `N` 解析成布尔值。
+
 #### `side_symbols` — 左侧快捷符号栏
 
 自定义九键键盘左侧空闲时显示的快捷符号列表。列表长度不限：不超过 4 个时等分铺满左栏，超过 4 个时可上下滑动。**打字状态下该区域显示拼音候选，不受此配置影响。**
@@ -726,7 +787,26 @@ keyboard:
 - 未配置时使用内置默认值（`，。？！`）；
 - 在 `xime.custom.yaml` 中写同路径的 `side_symbols` 即可覆盖整个列表；
 - 每项为单个符号或字符串，点击即上屏。
-- 方案绑定见上文「`keyboard.<section>.schemas` — 键盘布局绑定声明」，内置默认为 `[t9_pinyin, t9, wanxiang_t9]`。
+
+### `keyboard.stroke` — 笔画键盘配置
+
+#### `keys` — 笔画键手势（下一版本提供）
+
+笔画键的手势可自定义（在 `xime.custom.yaml` 的 `keyboard.stroke.keys` 同路径覆盖），键 id 为键面标签：
+
+```yaml
+keyboard:
+  stroke:
+    keys:
+      # 内置默认形态（节选）：上滑输入对应数字
+      # "一": { swipe_up: { value: "1", display: "key", bubble: false } }
+      # 示例：给「丿」的下滑绑定粘贴
+      "丿": { swipe_up: { value: "3", display: "key", bubble: false }, swipe_down: { label: "粘贴", action: paste, display: key } }
+```
+
+- 内置默认为上滑输入对应数字；此前版本该手势因缺少滑动提示文本实际不触发，现已修复生效；
+- `display` / `bubble` 的语义与九键数字键相同（`key` 画键面角标、`bubble: false` 拖动不弹气泡）；
+- 左侧快捷符号列（常显，超过 3 个时滚动显示）用同路径的 `side_symbols` 覆盖，未配置时使用内置默认值（`。？！~`）；方案绑定内置为 `[stroke]`。
 
 ### `keyboard.qwerty_14` / `qwerty_17` / `qwerty_18` — 合并键布局
 
@@ -820,7 +900,7 @@ keyboard:
       a: { tap: "a", width: 2 }
       # 功能键自定义
       shift: { width: 1.4, tap: { action: command, value: shift_single }, double_tap: { action: command, value: shift_caps } }
-      delete: { width: 1.4, tap: { action: delete }, long_press: { values: [ { action: delete, repeat: true } ] }, swipe_up: { action: clear_all }, swipe_down: { action: undo_clear } }
+      delete: { width: 1.4, tap: { action: delete }, long_press: { values: [ { action: delete } ] }, swipe_up: { action: clear_all }, swipe_down: { action: undo_clear } }
       mode_change: { width: 1.2, tap: { action: command, value: mode_change } }
       space: { width: 3, tap: { action: space }, long_press: { values: [ { action: voice } ] } }
       enter: { width: 1.2, tap: { action: enter } }
