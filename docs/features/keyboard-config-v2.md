@@ -761,7 +761,7 @@ keyboard:
 
 - **键面**：`keys.<id>.tap.label` 覆盖键面字母组（内置：1=分词、2=ABC……9=WXYZ）；
 - **长按**：`keys.<id>.long_press` 为气泡候选（内置 2=A/B/C……9=W/X/Y/Z、"1" 无长按）；配置后每项可用 `action` 触发任意动作，"1" 也能拥有长按候选；
-- **手势**：`swipe_up` / `swipe_down` / `swipe_left` / `swipe_right` 可配；内置默认为上滑直接输入键面数字（无需切数字键盘），下滑未绑定动作；
+- **手势**：`swipe_up` / `swipe_down` / `swipe_left` / `swipe_right` 可配；内置默认为上滑直接输入键面数字（无需切数字键盘），空格键上滑直接输入 `0`，下滑未绑定动作；
 - **提示与气泡**：`display` 只管静态提示位置（`key` 画在键面角标、`bubble` 不画键面留给气泡），`bubble` 独立控制运行时是否弹气泡（默认 `true`）。内置上滑为 `display: "key"` + `bubble: false`（数字作角标、拖动不弹气泡），想要拖动气泡自行改为 `bubble: true`；
 - **键级整体替换**：覆盖某个数字键时，键面/长按/手势要在同一条里写全，漏写的字段回退代码内置兜底；
 - 字母值建议加引号：YAML 会把裸的 `Y` / `N` 解析成布尔值。
@@ -790,7 +790,7 @@ keyboard:
 
 ### `keyboard.stroke` — 笔画键盘配置
 
-#### `keys` — 笔画键手势（下一版本提供）
+#### `keys` — 笔画键手势
 
 笔画键的手势可自定义（在 `xime.custom.yaml` 的 `keyboard.stroke.keys` 同路径覆盖），键 id 为键面标签：
 
@@ -804,7 +804,7 @@ keyboard:
       "丿": { swipe_up: { value: "3", display: "key", bubble: false }, swipe_down: { label: "粘贴", action: paste, display: key } }
 ```
 
-- 内置默认为上滑输入对应数字；此前版本该手势因缺少滑动提示文本实际不触发，现已修复生效；
+- 内置默认为上滑输入对应数字，空格键上滑直接输入 `0`；此前版本该手势因缺少滑动提示文本实际不触发，现已修复生效；
 - `display` / `bubble` 的语义与九键数字键相同（`key` 画键面角标、`bubble: false` 拖动不弹气泡）；
 - 左侧快捷符号列（常显，超过 3 个时滚动显示）用同路径的 `side_symbols` 覆盖，未配置时使用内置默认值（`。？！~`）；方案绑定内置为 `[stroke]`。
 
