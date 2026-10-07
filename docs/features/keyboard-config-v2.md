@@ -88,7 +88,8 @@ keyboard:             # 键盘配置
       rows: [...]
     keys: {...}
 
-  # 其他可选键盘：合并键 qwerty_14 / qwerty_17 / qwerty_18、九键 t9 等
+  # 其他可选键盘：合并键 qwerty_14 / qwerty_17 / qwerty_18、九键 t9 等；也可新增自定义段
+  # （layout.rows + keys + schemas 绑定方案即可生效，可选 type 声明段类型，见下文）
 ```
 
 > 本文以 `keyboard.qwerty` / `keyboard.qwerty_en` 的 `layout` + `keys` 为核心（新版重点），
@@ -571,9 +572,53 @@ keyboard:
 - **声明是唯一来源**：应用不再按方案 id（如 `14jian`、`t9`）中的关键字猜测布局，未声明的方案一律全键盘；
 - 在 `xime.custom.yaml` 中写 `schemas` 为**追加**语义：在内置声明基础上补充，不会移除内置声明；
 - 同一个方案 id 在多个 section 中声明时，以最后出现的为准；
-- **接入第三方方案**：九键 / 笔画 / 手写方案，在对应 section 的 `schemas` 中追加方案 id 即可；自定义合并键布局则新增 section（`layout.rows` + `keys` + `schemas`）即可生效，无需等待应用发版。
+- **接入第三方方案**：九键 / 笔画 / 手写方案，在对应 section 的 `schemas` 中追加方案 id 即可；自定义合并键布局则新增 section（`layout.rows` + `keys` + `schemas`）即可生效，无需等待应用发版；
+- **同一配置文件可定义多个全键盘布局**：每个 section 都是一套独立的 `layout.rows` + `keys`，各自用 `schemas` 绑定方案即可并存——切换到哪个方案，就整段切换到对应 section 的布局与手势。段名任意（如 `qwerty_30`），与布局内容无关；
+- **多个九键 / 笔画变体**：结合下文「`keyboard.<section>.type` — 段类型声明」，`type: t9` / `type: stroke` 的段可自由命名并存（如 `t9_compact` / `t9_wide`），各绑各的方案。
 
 > **从旧版本升级**：此前版本按方案 id / 名称中的关键字自动识别九键和合并键布局。升级后未声明 `schemas` 的第三方方案将回退为全键盘，需在 `xime.custom.yaml` 中补充声明。
+
+### `keyboard.<section>.type` — 段类型声明（可选）
+
+显式声明一个 keyboard section 是什么类型的键盘。**未声明时按段名推断**：段名为 `t9` / `stroke` / `handwriting` 之一即代码布局，其余一律全键盘——因此日常自定义全键盘（如 `qwerty_30`）无需写 `type`。
+
+| 值 | 类型 | 说明 |
+|------|------|------|
+| `full` | 全键盘 | 渲染该段的 `layout.rows`（默认类型） |
+| `t9` | 九键 | 由九键专属组件渲染，配置写在该段下（`layout` 三列 / `keys` / `side_symbols`） |
+| `stroke` | 笔画 | 由笔画专属组件渲染 |
+| `handwriting` | 手写 | 手写方案不经过 rime 引擎 |
+
+**用法一：全键盘段名撞上保留名时解救。** 保留名 `t9` / `stroke` / `handwriting` 默认按代码布局处理，若全键盘段恰好想用这些名字，显式声明 `type: full` 即可：
+
+```yaml
+keyboard:
+  t9:
+    type: full          # 名字虽叫 t9，但这是一套全键盘布局
+    schemas: [my_schema]
+    layout:
+      rows: [...]
+```
+
+**用法二：多个九键 / 笔画变体并存。** `type: t9` 让九键段不再受固定段名 `t9` 限制，可自由命名、并存多份，各绑各的方案；切换方案时整段换入：
+
+```yaml
+keyboard:
+  t9_compact:           # 紧凑九键，绑定内置拼音九键方案
+    type: t9
+    schemas: [t9_pinyin]
+    layout: { left: [...], rows: [...], right: [...] }
+  t9_wide:              # 宽版九键，绑定自定义方案
+    type: t9
+    schemas: [my_9key]
+    layout: { left: [...], rows: [...], right: [...] }
+```
+
+说明：
+
+- 显式 `type` **优先于段名推断**；写 `full` / `t9` / `stroke` / `handwriting` 之外的值会被忽略并回退按名推断（日志有告警）；
+- `xime.custom.yaml` 中的 `type` 声明覆盖 `xime.yaml` 同名段的声明；
+- 段名能直观表达类型时不必写 `type`；内置 `xime.yaml` 的三个代码布局段已显式声明作为示例。
 
 ### `keyboard.qwerty.button_layout` — 按键布局模式
 
@@ -603,6 +648,8 @@ keyboard:
   qwerty_en:
     button_layout: compact    # 英文键盘也使用紧凑布局
 ```
+
+所有**全键盘段**都支持 `button_layout`（含自定义段，如 `qwerty_30`）：在对应 section 下声明即可，仅中文态、激活该段时生效；未配置的段回退 `qwerty` 的值，英文态恒用 `qwerty_en` 的值。九键 / 笔画段不支持（固定 standard）。
 
 ### `keyboard.colors` — 键盘颜色
 
@@ -705,6 +752,8 @@ keyboard:
 九键键盘由三部分组成：`layout`（三列布局）、`keys`（数字键手势与键面）、`side_symbols`（左侧快捷符号栏）。方案绑定见上文「`keyboard.<section>.schemas` — 键盘布局绑定声明」，内置默认为 `[t9_pinyin, t9, wanxiang_t9, rime_frost_t9]`。
 
 > 注意：九键不支持 `button_layout`（按键布局模式），固定 standard 键面布局。
+>
+> 需要**多个九键变体并存**或自定义九键段名？见上文「`keyboard.<section>.type` — 段类型声明」：`type: t9` 的段可自由命名并存，各绑各的方案。
 
 #### `layout` — 三列布局（下一版本提供）
 
