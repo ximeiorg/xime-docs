@@ -366,6 +366,7 @@ xipm pack plugins/my-plugin --with-assets
 
 - [插件开发教程](./PLUGIN_DEV_TUTORIAL) — 从零到热调试
 - [测试指南](./TESTING) — 宿主侧测试
+- [上架到扩展商店](/mobile/features/extension-store#上架自己的内容) — 把插件发布到插件市场
 - SDK 类型：`tools/xime-plugin/templates/xime-plugin.d.ts`
 - manifest schema：`docs/sdk/manifest.schema.json`
 - 源码与示例：<https://github.com/ximeiorg/Xime>（`plugin-core/`、`plugins/`、`tools/xime-plugin/`）

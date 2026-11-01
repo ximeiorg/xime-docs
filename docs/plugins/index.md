@@ -31,3 +31,4 @@ Xime 的插件为 **TypeScript 脚本插件**（由 `xipm` 编译为单文件 Ja
 
 - 想动手：看 [插件开发教程](./PLUGIN_DEV_TUTORIAL)（从零写第一个插件 → 测试 → 打包 → 热调试）
 - 查字段与接口：[插件开发指南](./PLUGIN_DEVELOPMENT_GUIDE)
+- 打包好 `.xipk` 之后：[上架到扩展商店](/mobile/features/extension-store#上架自己的内容) — 提交到插件市场

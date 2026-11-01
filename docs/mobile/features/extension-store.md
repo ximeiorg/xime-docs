@@ -52,6 +52,56 @@ Xime 的扩展商店（设置 → 扩展 → 扩展商店）集中提供**输入
 - 点击「应用」后会**覆盖当前的 `xime.custom.yaml`**（不保留备份）；应用前会弹出确认对话框，布局自带的警告信息也会一并展示（v3.4.3+）
 - 缺依赖或需更高版本时会禁用「应用」按钮
 
+## 上架自己的内容
+
+商店里的方案、模型、插件、布局都来自索引仓库 [ximeiorg/xime-index](https://github.com/ximeiorg/xime-index)。索引只保存**引用**——下载地址、`sha256`、版本、简介，文件本身放在作者自己的 GitHub Release 里。
+
+| 上架内容 | 索引目录 | 作者侧产物 |
+| --- | --- | --- |
+| 布局 / 配色 | `src/layouts/` | `xime.custom.yaml`；含主题、字体等资源时打包为根级 zip |
+| 插件（Xime 3.0+） | `src/plugins/v2/` | `.xipk`（`manifest.json` + `main.js` + `resources/`） |
+| 旧版插件（Xime < 3.0） | `src/plugins/v1/` | Lua / DEX `.xipk`，仅维护旧版 App |
+| 输入方案 | `src/rimes/` | `.zip` / `.tar.gz`，含 `.schema.yaml` 与 `.dict.yaml` |
+| 模型 | `src/models/` | 文件清单或 `.tar.bz2` 归档 |
+
+### 手工上架
+
+1. 把产物上传为 GitHub Release 附件。分支归档、raw、jsDelivr 的内容会变，`sha256` 随之失效。
+2. 在 `xime-index` 的 `src/<类型>/<id>.yaml` 填写版本、下载地址、`sha256`、文件大小和 License。
+3. 本地校验字段、zip 结构、`schema_id`、附件哈希，再从 `upstream/main` 建分支提 PR——只改 `src/`，不碰自动生成的子索引。
+4. 维护者合并后 CI 重新生成索引，商店内容随索引更新。
+
+> 一个 PR 只做一个条目；历史版本和旧 Release 附件要保留，不要覆盖旧 tag。完整规则见 [CONTRIBUTING.md](https://github.com/ximeiorg/xime-index/blob/main/CONTRIBUTING.md)。
+
+### 用 AI 技能上架（xime-skills）
+
+[xime-skills](https://github.com/tiengming/xime-skills) 是面向曦码扩展生态的 Agent Skills，当前包含 `xime-index-submit` 技能，把上面的流程交给 AI 编程助手执行：读产物、算哈希、写条目、跑校验，只在 `git push` 和创建 PR 前征求你的确认。
+
+```bash
+npx skills add tiengming/xime-skills --skill xime-index-submit -g
+```
+
+`-g` 表示装到用户级目录 `~/.agents/skills/`，所有项目可用；去掉 `-g` 只装到当前项目。需要 Python 3.10+ 与 PyYAML；`gh`（自动开 PR）、`uv`、`npx` 可选，缺少时技能会给出替代步骤。
+
+安装后直接把链接交给助手：
+
+```text
+使用 xime-index-submit 技能，把这个仓库的输入方案上架到曦码扩展商店：
+https://github.com/you/rime-scheme
+```
+
+更新版本、修 PR 同理：`用 xime-index-submit 把 my_schema 更新到 1.3.0`、`用 xime-index-submit 修一下这个 PR 的 CI 失败：<链接>`。
+
+技能按 9 个阶段执行：预检（含跨平台 `gh` 探测与登录状态）→ 分类 → 产物校验 → 下载附件实测 `sha256` → 写 `src/` 条目 → 本地校验 → 提交 PR（需你确认）→ 盯 CI → 合并后确认。它不会合并 PR、不会读取 token，也不会提交自动生成的子索引。
+
+### 常见问题
+
+- **找不到 `gh`**：技能先在 `PATH`、再在常见安装目录（Windows 的 `%LOCALAPPDATA%\Programs\GitHub CLI`、Scoop / Chocolatey / WinGet，macOS 的 `/opt/homebrew/bin`，Linux 的 `~/.local/bin`、`/snap/bin` 等）查找；仍然没有时会给出跨仓库比较链接，可手动创建 PR。
+- **下载失败 / 网络受阻**：技能会提示是否需要代理，只列代理环境变量名、不打印值；设置 `https_proxy` 后重试，不要改用本地哈希或跳过校验。
+- **`schema_id` 与 `id` 不一致**：索引文件名、条目 `id`、包内主方案的 `schema_id` 必须一致（标准写法在 `schema:` 段内）。
+- **`sha256` 对不上**：先确认附件是否传错；内容确实变了要发新版本（新 tag + 新附件），不要覆盖旧 tag。
+- **PR 没有 CI 检查**：上游 Validate 只监听生成路径，只改 `src/` 的 PR 本来就不触发检查，以本地校验为准。
+
 ## 相关文档
 
 - [插件管理](/plugins/) - 插件列表与开发指南
