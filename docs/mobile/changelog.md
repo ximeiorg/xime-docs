@@ -2,6 +2,22 @@
 
 > 平台：手机版 —— 当前为 Android（曦码），HarmonyOS 适配中。桌面版（曦码·曜）的更新记录见 [桌面版更新日志](/pc/changelog)。
 
+## v3.5.0（开发中）
+
+### 新增
+
+- **按键级外观**：`keyboard.<section>.keys.<id>` 支持 `corner_radius` / `background` / `background_dark`，可单独调整某个键的圆角与背景
+- **主题色按键**：按键背景支持 `accent` / `primary` / `special` / `key` / `keyboard` 记号，切换主题和亮暗模式时自动跟随
+- 新增彩色键盘与主题色按键配置示例（`config_examples/colorful`、`config_examples/theme_accent`）
+- 语音识别长文本支持滚动查看，并自动跟随最新识别内容，不再被上下区域裁切
+- 浏览器导入页支持在线编辑 `rime/` 下的文本配置，并适配手机窄屏布局
+
+### 优化
+
+- 常用符号面板的回车键字号与全键盘统一
+- 候选栏 logo / 返回 / 收起 / 展开的圆形背景改为半透明，适配彩色、渐变和图片背景
+- 切换输入方案成功后不再弹出「已切换输入方案」Toast，避免打断输入
+
 ## v3.4.3
 
 **发布日期**: 2026-10-30

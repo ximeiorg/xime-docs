@@ -79,7 +79,7 @@ keyboard:             # 键盘配置
         - [a, s, d, f, g, h, j, k, l]
         - [shift, z, x, c, v, b, n, m, delete]
         - [mode_change, comma, space, earth, enter]
-    keys:                     # 决定行为：每个键的手势
+    keys:                     # 决定行为/外观：每个键的手势与可选 corner_radius/background
       q: { tap: "q", swipe_up: "1" }
       shift: { width: 1.4, tap: { action: command, value: shift_single }, double_tap: { action: command, value: shift_caps } }
       space: { width: 3, tap: { action: space }, long_press: { values: [ { action: voice } ] } }
@@ -781,6 +781,47 @@ keyboard:
 
 内置默认已为平板档配置 `t9_tablet` / `stroke_tablet` / `number_tablet` / `symbol_tablet` 的 4/6dp 键间距，在 `xime.custom.yaml` 写同名键即可调整。
 
+### `keys.<id>` — 按键级外观（v3.5.0+）
+
+除了 `keyboard.key.corner_radius` 的全局/键盘级圆角，还可以在对应键盘的 `keys.<id>` 下单独设置某个键的圆角与背景：
+
+```yaml
+keyboard:
+  qwerty:
+    keys:
+      space:
+        corner_radius: 22
+        background: accent          # 跟随当前主题强调色
+      enter:
+        corner_radius: 16
+        background: 0x9FEF86        # 固定色
+        background_dark: 0x2F5A2F
+      delete:
+        background: special
+```
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `corner_radius` | 整数 | 该键圆角（dp）；不写时沿用键盘级 / 全局圆角 |
+| `background` | 颜色 / 主题色记号 | 该键背景色；不写时沿用主题按键底色 |
+| `background_dark` | 颜色 / 主题色记号 | 暗色模式背景；不写时若 `background` 是主题色记号，会自动取暗色主题对应色 |
+
+`background` / `background_dark` 支持：
+
+- 固定颜色：`0xRRGGBB` / `0xAARRGGBB`
+- 主题色记号（随用户切换主题、亮暗模式自动变化）：
+  - `accent` / `primary`：主题强调色
+  - `special`：特殊键底色
+  - `key`：普通键底色
+  - `keyboard`：键盘背景色
+  - 可带 `theme.` 前缀，大小写不敏感
+
+> 按键级外观只写 `corner_radius` / `background` / `background_dark` 时，会保留该键原有的 `tap` / `swipe_*` / `long_press` / `width`；如果同时写了任一行为字段，仍按「整键替换」处理。
+>
+> 当前作用范围：26 键全键盘（含中英文）与数字 / 常用符号面板；九键、笔画、手写暂不支持按键级外观。
+>
+> 完整教程与更多示例见 [按键外观与彩色键盘](keyboard-appearance.md)。
+
 ### `keyboard.shadow` — 按键阴影
 
 ```yaml
@@ -1020,7 +1061,7 @@ layout:
 在 `xime.custom.yaml` 中写同名 section 即可覆盖内置默认：
 
 - `layout.rows` 为**整段覆盖**：写了 `rows` 就需要给出完整的行布局，而不是只写要改的一行；
-- `keys` 为**按键级覆盖**：只需写要修改的键，未写的键沿用内置默认；注意覆盖是**整键替换**，该键的 `tap` / `swipe_up` / `long_press` 等手势需要在同一条里完整给出；
+- `keys` 为**按键级覆盖**：只需写要修改的键，未写的键沿用内置默认；只写 `corner_radius` / `background` / `background_dark` 时仅覆盖外观并保留原手势，写了任一行为字段（`tap` / `swipe_*` / `long_press` / `width`）时仍为**整键替换**，该键的手势需要在同一条里完整给出；
 - `schemas` 为**追加声明**：为自定义方案接入合并键布局时，在其中声明方案 id（如 `schemas: [my_schema]`）。
 
 ```yaml
@@ -1114,6 +1155,8 @@ keyboard:
 | [`msdouble/`](https://github.com/ximeiorg/Xime/tree/main/docs/config_examples/msdouble) | 微软双拼方案 | `layout.rows` 自定义键盘行布局、`button_layout: compact` |
 | [`shortcut/`](https://github.com/ximeiorg/Xime/tree/main/docs/config_examples/shortcut) | 快捷操作按键（最小示例） | 全选 / 剪切 / 复制 / 粘贴 / 段首段尾等编辑动作绑定下滑，仅含 `keyboard` 段 |
 | [`theme/`](https://github.com/ximeiorg/Xime/tree/main/docs/config_examples/theme) | 主题配色自定义 | zine 系列 5 套配色，`keyboard_background` 纯色 / 渐变 / 图片背景与 `dark_mode`，仅含 `color_schemes` 段 |
+| [`colorful/`](https://github.com/ximeiorg/Xime/tree/main/docs/config_examples/colorful) | 彩色键盘示例 | 26 键中英文 + 数字面板的按键级 `background` / `background_dark` / `corner_radius` |
+| [`theme_accent/`](https://github.com/ximeiorg/Xime/tree/main/docs/config_examples/theme_accent) | 按键跟随主题色 | `background: accent` / `primary` / `special` 等主题色记号，切换主题自动变化 |
 
 使用方式：在浏览器中打开对应目录下的 `xime.custom.yaml`，点击 `Raw` 下载原始文件后，通过「浏览器导入」上传即可；也可以只复制其中需要的配置段（如 `color_schemes`、`keyboard`）合并到自己的 `xime.custom.yaml` 中。
 
