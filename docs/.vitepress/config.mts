@@ -146,6 +146,7 @@ export default defineConfig({
           text: '外观与交互',
           items: [
             { text: '键盘调节', link: '/mobile/features/keyboard-adjustment' },
+            { text: '按键外观与彩色键盘', link: '/mobile/features/keyboard-appearance' },
             { text: '悬浮键盘', link: '/mobile/features/floating-keyboard' }
           ]
         },
