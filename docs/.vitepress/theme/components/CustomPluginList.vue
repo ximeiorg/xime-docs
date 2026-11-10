@@ -130,7 +130,7 @@
       </div>
 
       <div class="xidx-more">
-        <a href="/mobile/features/extension-store" class="x-btn x-btn-glass">了解扩展商店</a>
+        <a href="/features/extension-store" class="x-btn x-btn-glass">了解扩展商店</a>
         <a href="/plugins/PLUGIN_DEVELOPMENT_GUIDE" class="x-btn x-btn-glass">插件开发指南</a>
         <a href="/plugins/TESTING" class="x-btn x-btn-glass">测试指南</a>
       </div>

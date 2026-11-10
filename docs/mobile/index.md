@@ -1,6 +1,12 @@
 ---
-layout: custom-mobile-home
-sidebar: false
+head:
+  - - meta
+    - http-equiv: refresh
+      content: '0; url=/mobile/usage'
+  - - link
+    - rel: canonical
+      href: /mobile/usage
 ---
+# 已迁移
 
-<!-- 手机版落地页，内容由 MobileHome.vue 渲染 -->
+手机版入口已合并到统一的[首页](/)；请直接前往[Android 使用文档](/mobile/usage)。

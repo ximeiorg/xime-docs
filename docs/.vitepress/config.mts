@@ -81,32 +81,21 @@ export default defineConfig({
     ]
   },
   themeConfig: {
-    // ── 设备形态分区（2026-10-31 确立）──
-    // 手机版 / 桌面版各只有一份共享文档，不分具体平台；
-    // 平台操作差异用 PlatTabs 组件在文内区分（示例见 docs/pc/usage.md 的安装/数据目录）。
-    // 新平台加入时：在对应分区的相关页面加标签页即可；新设备形态才需要建目录 + nav 加项 + sidebar 加前缀键。
-    // 例外：设备互联（/device-link/）是 Android 与 ximed 共用的跨设备功能，单独成区。
+    // ── 文档结构（2026-11-11 调整）──
+    // 1. 落地页只有一个：/（CustomHome），Android / Windows / Linux 三端共用；
+    //    /mobile/、/pc/、/ximeche/ 的 index 都重定向到各自的安装/使用页，不再单独做落地页。
+    // 2. 通用功能文档统一放 /features/，页首标注适用平台；平台差异写进平台文档。
+    // 3. 安装、启用、设置程序、数据目录按平台分开：/mobile/、/pc/、/ximeche/。
+    // 4. 设备互联（/device-link/）是跨设备功能，单独成区。
     nav: [
       { text: '首页', link: '/' },
       {
-        text: '手机版',
+        text: '文档',
         items: [
-          { text: '主页', link: '/mobile/' },
-          { text: '使用文档', link: '/mobile/usage' },
-          { text: '功能一览', link: '/mobile/features' },
-          { text: '更新日志', link: '/mobile/changelog' },
-          { text: '常见问题', link: '/mobile/faq' },
-          { text: '下载', link: 'https://github.com/ximeiorg/Xime/releases' }
-        ]
-      },
-      {
-        text: '桌面版',
-        items: [
-          { text: '主页', link: '/pc/' },
-          { text: '使用文档', link: '/pc/usage' },
-          { text: '更新日志', link: '/pc/changelog' },
-          { text: '常见问题', link: '/pc/faq' },
-          { text: '下载（Beta）', link: 'https://github.com/ximeiorg/XimeYao/releases' }
+          { text: '功能文档', link: '/features/' },
+          { text: 'Android 使用文档', link: '/mobile/usage' },
+          { text: 'Windows 使用文档', link: '/pc/usage' },
+          { text: 'Linux 使用文档', link: '/ximeche/install' }
         ]
       },
       {
@@ -118,66 +107,107 @@ export default defineConfig({
           { text: '常见问题', link: '/device-link/faq' }
         ]
       },
-      { text: '方案', link: '/rime-list' },
-      { text: '模型', link: '/model-list' },
-      { text: '布局', link: '/layout-list' },
-      { text: '插件', link: '/plugin-list' }
+      {
+        text: '资源',
+        items: [
+          { text: '方案市场', link: '/rime-list' },
+          { text: '模型', link: '/model-list' },
+          { text: '布局', link: '/layout-list' },
+          { text: '插件', link: '/plugin-list' }
+        ]
+      },
+      {
+        text: '帮助',
+        items: [
+          { text: 'Android 常见问题', link: '/mobile/faq' },
+          { text: 'Windows 常见问题', link: '/pc/faq' },
+          { text: 'Linux 常见问题', link: '/ximeche/faq' },
+          { text: 'Android 更新日志', link: '/mobile/changelog' },
+          { text: 'Windows 更新日志', link: '/pc/changelog' }
+        ]
+      }
     ],
 
     sidebar: {
-      '/mobile/': [
+      '/features/': [
         {
-          text: '开始',
-          items: [
-            { text: '简介', link: '/mobile/' },
-            { text: '使用文档', link: '/mobile/usage' },
-            { text: '更新日志', link: '/mobile/changelog' }
-          ]
+          text: '功能文档',
+          items: [{ text: '功能总览', link: '/features/' }]
         },
         {
-          text: '方案与词库',
+          text: '输入与词库',
           items: [
-            { text: '输入方案', link: '/mobile/features/input-scheme' },
-            { text: '词库管理', link: '/mobile/features/dictionary' },
-            { text: '部署方案', link: '/mobile/features/deployment' }
+            { text: '输入方案', link: '/features/input-scheme' },
+            { text: '词库管理', link: '/features/dictionary' },
+            { text: '部署方案', link: '/features/deployment' }
           ]
         },
         {
           text: '外观与交互',
           items: [
-            { text: '键盘调节', link: '/mobile/features/keyboard-adjustment' },
-            { text: '按键外观与彩色键盘', link: '/mobile/features/keyboard-appearance' },
-            { text: '悬浮键盘', link: '/mobile/features/floating-keyboard' }
-          ]
-        },
-        {
-          text: '智能与扩展',
-          items: [
-            { text: '智能联想', link: '/mobile/features/smart-prediction' },
-            { text: '智能纠错', link: '/mobile/features/correction' },
-            { text: '语音转文本', link: '/mobile/features/speech-to-text' },
-            { text: '扩展商店', link: '/mobile/features/extension-store' },
-            { text: '插件管理', link: '/plugins/' }
-          ]
-        },
-        {
-          text: '同步与备份',
-          items: [
-            { text: '云备份', link: '/mobile/features/cloud-backup' },
-            { text: 'WebDAV 同步（已移除）', link: '/mobile/features/webdav-sync' }
+            { text: '键盘调节', link: '/features/keyboard-adjustment' },
+            { text: '按键外观与彩色键盘', link: '/features/keyboard-appearance' },
+            { text: '悬浮键盘', link: '/features/floating-keyboard' },
+            { text: '工具栏自定义', link: '/features/toolbar' },
+            { text: '键盘配置（新版）', link: '/features/keyboard-config-v2' },
+            { text: '键盘配置（旧版）', link: '/features/keyboard-config' }
           ]
         },
         {
           text: '工具',
           items: [
-            { text: '剪贴板', link: '/mobile/features/clipboard' },
-            { text: '快捷发送', link: '/mobile/features/quick-send' },
-            { text: '表情', link: '/mobile/features/emoji' },
-            { text: '计算器', link: '/mobile/features/calculator' },
-            { text: '手写输入', link: '/mobile/features/handwriting' },
-            { text: '工具栏自定义', link: '/mobile/features/toolbar' },
-            { text: '键盘配置自定义（旧版）', link: '/mobile/features/keyboard-config' },
-            { text: '键盘配置自定义（新版）', link: '/mobile/features/keyboard-config-v2' }
+            { text: '剪贴板', link: '/features/clipboard' },
+            { text: '快捷发送', link: '/features/quick-send' },
+            { text: '表情', link: '/features/emoji' },
+            { text: '计算器', link: '/features/calculator' },
+            { text: '手写输入', link: '/features/handwriting' }
+          ]
+        },
+        {
+          text: '智能与语音',
+          items: [
+            { text: '语音转文本', link: '/features/speech-to-text' },
+            { text: '智能联想', link: '/features/smart-prediction' },
+            { text: '智能纠错', link: '/features/correction' }
+          ]
+        },
+        {
+          text: '扩展与同步',
+          items: [
+            { text: '扩展商店', link: '/features/extension-store' },
+            { text: '云备份', link: '/features/cloud-backup' },
+            { text: '设备互联', link: '/device-link/' },
+            { text: '插件', link: '/plugins/' }
+          ]
+        },
+        {
+          text: '旧版',
+          items: [
+            { text: 'WebDAV 同步（已移除）', link: '/features/webdav-sync' }
+          ]
+        }
+      ],
+      '/mobile/': [
+        {
+          text: '开始',
+          items: [
+            { text: '使用文档', link: '/mobile/usage' },
+            { text: '常见问题', link: '/mobile/faq' },
+            { text: '更新日志', link: '/mobile/changelog' }
+          ]
+        },
+        {
+          text: '功能文档',
+          items: [
+            { text: '功能总览', link: '/features/' },
+            { text: '输入方案', link: '/features/input-scheme' },
+            { text: '剪贴板', link: '/features/clipboard' },
+            { text: '语音转文本', link: '/features/speech-to-text' },
+            { text: '键盘调节', link: '/features/keyboard-adjustment' },
+            { text: '悬浮键盘', link: '/features/floating-keyboard' },
+            { text: '手写输入', link: '/features/handwriting' },
+            { text: '智能联想', link: '/features/smart-prediction' },
+            { text: '智能纠错', link: '/features/correction' }
           ]
         }
       ],
@@ -194,18 +224,26 @@ export default defineConfig({
       ],
       '/pc/': [
         {
-          text: '桌面版（曦码·曜）',
+          text: 'Windows（曦码·曜）',
           items: [
             { text: '总览与安装', link: '/pc/usage' },
-            { text: '输入方案', link: '/pc/input-scheme' },
-            { text: '计算器', link: '/pc/calculator' },
+            { text: '输入方案（Windows）', link: '/pc/input-scheme' },
+            { text: '计算器', link: '/features/calculator' },
             { text: '常见问题', link: '/pc/faq' },
             { text: '更新日志', link: '/pc/changelog' }
           ]
+        },
+        {
+          text: '功能文档',
+          items: [
+            { text: '功能总览', link: '/features/' },
+            { text: '剪贴板', link: '/features/clipboard' },
+            { text: '语音转文本', link: '/features/speech-to-text' },
+            { text: '云备份', link: '/features/cloud-backup' }
+          ]
         }
       ],
-      // 设备互联是跨设备形态的功能分区（Android + ximed 桌面端），
-      // 不归入 /mobile/ 或 /pc/，避免和「曦码·曜」桌面版混在一起。
+      // 设备互联是跨设备形态的功能分区（Android + ximed 桌面端）。
       '/device-link/': [
         {
           text: '设备互联',
@@ -214,6 +252,28 @@ export default defineConfig({
             { text: '手机端（Android）', link: '/device-link/android' },
             { text: '桌面端（ximed）', link: '/device-link/ximed' },
             { text: '常见问题', link: '/device-link/faq' }
+          ]
+        }
+      ],
+      // 曦码·澈是 Linux 原生输入法，与「曦码·曜」（Windows）是两条独立产品线。
+      '/ximeche/': [
+        {
+          text: '曦码·澈（Linux）',
+          items: [
+            { text: '总览与安装', link: '/ximeche/install' },
+            { text: '使用与设置', link: '/ximeche/usage' },
+            { text: '常见问题', link: '/ximeche/faq' }
+          ]
+        },
+        {
+          text: '功能文档',
+          items: [
+            { text: '功能总览', link: '/features/' },
+            { text: '输入方案', link: '/features/input-scheme' },
+            { text: '剪贴板', link: '/features/clipboard' },
+            { text: '语音转文本', link: '/features/speech-to-text' },
+            { text: '扩展商店', link: '/features/extension-store' },
+            { text: '云备份', link: '/features/cloud-backup' }
           ]
         }
       ]

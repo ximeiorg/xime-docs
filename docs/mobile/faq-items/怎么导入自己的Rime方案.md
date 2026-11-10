@@ -2,7 +2,7 @@
 order: 8
 category: 方案与词库
 q: 怎么导入自己的 Rime 方案？
-linkHref: /mobile/features/input-scheme
+linkHref: /features/input-scheme
 linkText: 输入方案文档
 ---
 

@@ -34,7 +34,7 @@
         </div>
         <div class="xidx-actions">
           <a href="#list" class="x-btn x-btn-primary">浏览方案</a>
-          <a href="/mobile/features/input-scheme" class="x-btn x-btn-glass">使用文档</a>
+          <a href="/features/input-scheme" class="x-btn x-btn-glass">使用文档</a>
         </div>
       </div>
     </section>
@@ -122,8 +122,8 @@
       </div>
 
       <div class="xidx-more">
-        <a href="/mobile/features/input-scheme" class="x-btn x-btn-glass">输入方案文档</a>
-        <a href="/mobile/features/dictionary" class="x-btn x-btn-glass">词库管理</a>
+        <a href="/features/input-scheme" class="x-btn x-btn-glass">输入方案文档</a>
+        <a href="/features/dictionary" class="x-btn x-btn-glass">词库管理</a>
         <a href="/model-list" class="x-btn x-btn-glass">模型中心</a>
       </div>
     </section>

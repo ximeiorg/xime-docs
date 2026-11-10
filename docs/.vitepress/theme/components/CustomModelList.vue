@@ -30,7 +30,7 @@
         </div>
         <div class="xidx-actions">
           <a href="#list" class="x-btn x-btn-primary">浏览模型</a>
-          <a href="/mobile/features/speech-to-text" class="x-btn x-btn-glass">语音转文本文档</a>
+          <a href="/features/speech-to-text" class="x-btn x-btn-glass">语音转文本文档</a>
         </div>
       </div>
     </section>
@@ -113,9 +113,9 @@
       </div>
 
       <div class="xidx-more">
-        <a href="/mobile/features/smart-prediction" class="x-btn x-btn-glass">智能联想文档</a>
-        <a href="/mobile/features/speech-to-text" class="x-btn x-btn-glass">语音转文本文档</a>
-        <a href="/mobile/features/handwriting" class="x-btn x-btn-glass">手写输入文档</a>
+        <a href="/features/smart-prediction" class="x-btn x-btn-glass">智能联想文档</a>
+        <a href="/features/speech-to-text" class="x-btn x-btn-glass">语音转文本文档</a>
+        <a href="/features/handwriting" class="x-btn x-btn-glass">手写输入文档</a>
       </div>
     </section>
 

@@ -2,11 +2,11 @@
 head:
   - - meta
     - http-equiv: refresh
-      content: '0; url=/mobile/features'
+      content: '0; url=/features/'
   - - link
     - rel: canonical
-      href: /mobile/features
+      href: /features/
 ---
 # 已迁移
 
-本页已迁移到手机版分区，请前往 /mobile/features。
+功能文档已按功能重新组织，请前往[功能文档](/features/)。

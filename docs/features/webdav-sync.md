@@ -1,12 +1,23 @@
----
-head:
-  - - meta
-    - http-equiv: refresh
-      content: '0; url=/mobile/features/webdav-sync'
-  - - link
-    - rel: canonical
-      href: /mobile/features/webdav-sync
----
-# 已迁移
+# WebDAV 同步（已移除）
 
-本页已迁移到手机版分区，请前往 /mobile/features/webdav-sync。
+::: info 适用平台
+**仅 Android（已移除）**。这是旧版 Android 功能记录，保留供升级用户查阅。
+:::
+
+
+::: danger 功能已移除
+内置 WebDAV 同步功能已在 **v2.8.0** 移除，由**云备份**功能（WebDAV 备份插件）替代。请前往 [云备份](/features/cloud-backup) 文档了解使用方式。
+:::
+
+## 与旧版的差异
+
+| | 旧版 WebDAV 同步 | 新版云备份 |
+|---|---|---|
+| 备份形态 | 散文件逐个上传 | 单一 zip 备份包 |
+| 备份范围 | 仅 Rime 配置文件 | 配置 + 词库 + 自造词 + 应用设置 + 插件配置/插件包 |
+| 实现方式 | 内置功能 | 插件化（可替换传输服务） |
+| 多设备同步 | 支持（双向覆盖） | 暂不支持（按备份包恢复） |
+
+::: warning 旧数据迁移
+旧版同步到 `{远程目录}/rime/...` 的散文件不是备份包格式，新功能无法识别或恢复，也不再提供入口。
+:::
