@@ -85,6 +85,7 @@ export default defineConfig({
     // 手机版 / 桌面版各只有一份共享文档，不分具体平台；
     // 平台操作差异用 PlatTabs 组件在文内区分（示例见 docs/pc/usage.md 的安装/数据目录）。
     // 新平台加入时：在对应分区的相关页面加标签页即可；新设备形态才需要建目录 + nav 加项 + sidebar 加前缀键。
+    // 例外：设备互联（/device-link/）是 Android 与 ximed 共用的跨设备功能，单独成区。
     nav: [
       { text: '首页', link: '/' },
       {
@@ -106,6 +107,15 @@ export default defineConfig({
           { text: '更新日志', link: '/pc/changelog' },
           { text: '常见问题', link: '/pc/faq' },
           { text: '下载（Beta）', link: 'https://github.com/ximeiorg/XimeYao/releases' }
+        ]
+      },
+      {
+        text: '设备互联',
+        items: [
+          { text: '使用指南', link: '/device-link/' },
+          { text: '手机端（Android）', link: '/device-link/android' },
+          { text: '桌面端（ximed）', link: '/device-link/ximed' },
+          { text: '常见问题', link: '/device-link/faq' }
         ]
       },
       { text: '方案', link: '/rime-list' },
@@ -190,6 +200,19 @@ export default defineConfig({
             { text: '计算器', link: '/pc/calculator' },
             { text: '常见问题', link: '/pc/faq' },
             { text: '更新日志', link: '/pc/changelog' }
+          ]
+        }
+      ],
+      // 设备互联是跨设备形态的功能分区（Android + ximed 桌面端），
+      // 不归入 /mobile/ 或 /pc/，避免和「曦码·曜」桌面版混在一起。
+      '/device-link/': [
+        {
+          text: '设备互联',
+          items: [
+            { text: '使用指南', link: '/device-link/' },
+            { text: '手机端（Android）', link: '/device-link/android' },
+            { text: '桌面端（ximed）', link: '/device-link/ximed' },
+            { text: '常见问题', link: '/device-link/faq' }
           ]
         }
       ]

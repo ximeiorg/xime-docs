@@ -176,7 +176,7 @@ const features = [
   { icon: '🧠', title: '智能纠错', details: '按错相邻键时在候选栏给出纠正候选，手动选择不干扰原输入，支持五笔与全拼', link: '/mobile/features/correction' },
   { icon: '🎤', title: '语音转文本', details: '内置离线流式识别模型，离线可用不吃字，还可安装 FunAsr、火山引擎等在线语音插件', link: '/mobile/features/speech-to-text' },
   { icon: '🤖', title: 'AI 智能联想', details: 'Transformer 模型预测联想词，搭配 AI 回复、AI 写作、AI 翻译等插件', link: '/mobile/features/smart-prediction' },
-  { icon: '📋', title: '剪贴板与拖拽', details: '剪贴板历史、文本分词、快捷发送，长按拖出即可把内容拖进其他应用的输入框', link: '/mobile/features/clipboard' },
+  { icon: '📋', title: '剪贴板与拖拽', details: '剪贴板历史、文本分词、快捷发送；同一 Wi-Fi 下还能与电脑直连互传剪贴板', link: '/mobile/features/clipboard' },
   { icon: '☁️', title: '云备份与同步', details: 'WebDAV 一键备份方案、配置、自造词与插件设置，多设备用户词典按时间戳合并', link: '/mobile/features/cloud-backup' }
 ]
 
