@@ -161,59 +161,79 @@ html.x-home-view.x-nav-scrolled .VPNavBar {
   pointer-events: none;
 }
 
-/* 流动光晕 */
+/* 两层缓慢呼吸的光晕：数量减到 2、周期拉到 30s 以上，只做氛围不抢焦点 */
 .x-blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(90px);
-  opacity: 0.45;
+  filter: blur(84px);
+  opacity: 0.5;
   will-change: transform;
 }
 .x-blob-1 {
-  width: 560px; height: 560px;
-  background: radial-gradient(circle, rgba(143, 115, 226, 0.55), transparent 65%);
-  top: -180px; left: 4%;
-  animation: xDrift1 18s ease-in-out infinite alternate;
+  width: 660px; height: 660px;
+  background: radial-gradient(circle, rgba(143, 115, 226, 0.52), transparent 68%);
+  top: -240px; left: 0%;
+  animation: xDrift1 34s ease-in-out infinite alternate;
 }
 .x-blob-2 {
-  width: 460px; height: 460px;
-  background: radial-gradient(circle, rgba(111, 214, 255, 0.28), transparent 65%);
-  top: 10%; right: -6%;
-  animation: xDrift2 22s ease-in-out infinite alternate;
+  width: 560px; height: 560px;
+  background: radial-gradient(circle, rgba(111, 214, 255, 0.24), transparent 68%);
+  top: 6%; right: -8%;
+  animation: xDrift2 42s ease-in-out infinite alternate;
 }
 .x-blob-3 {
   width: 520px; height: 520px;
-  background: radial-gradient(circle, rgba(168, 143, 240, 0.32), transparent 65%);
-  bottom: -220px; left: 34%;
-  animation: xDrift3 26s ease-in-out infinite alternate;
+  background: radial-gradient(circle, rgba(168, 143, 240, 0.3), transparent 68%);
+  bottom: -220px; left: 32%;
+  animation: xDrift3 30s ease-in-out infinite alternate;
 }
 @keyframes xDrift1 {
-  to { transform: translate(120px, 80px) scale(1.15); }
+  to { transform: translate(90px, 60px) scale(1.12); }
 }
 @keyframes xDrift2 {
-  to { transform: translate(-100px, 120px) scale(0.9); }
+  to { transform: translate(-110px, -70px) scale(1.08); }
 }
 @keyframes xDrift3 {
-  to { transform: translate(-140px, -60px) scale(1.1); }
+  to { transform: translate(-120px, -50px) scale(1.1); }
 }
 
-/* 细网格纹理 */
+/* 点阵纹理：比 1px 网格更细、更不抢线；随滚动轻微上移形成纵深 */
 .x-grid-overlay {
   position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-  background-size: 56px 56px;
-  -webkit-mask-image: radial-gradient(ellipse 90% 72% at 50% 0%, #000 25%, transparent 78%);
-  mask-image: radial-gradient(ellipse 90% 72% at 50% 0%, #000 25%, transparent 78%);
+  inset: -12% 0 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.14) 1.2px, transparent 1.2px);
+  background-size: 23px 23px;
+  -webkit-mask-image: radial-gradient(ellipse 78% 62% at 62% 8%, #000 12%, transparent 72%);
+  mask-image: radial-gradient(ellipse 78% 62% at 62% 8%, #000 12%, transparent 72%);
+  transform: translate3d(0, calc(var(--sy, 0) * -0.05px), 0);
+  will-change: transform;
 }
 
-/* 飘浮按键粒子 */
+/* 指针柔光：只跟随鼠标，触屏不渲染 */
+.x-pointer-glow {
+  position: absolute;
+  inset: 0;
+  opacity: var(--pv, 0);
+  transition: opacity 0.45s ease;
+  background: radial-gradient(
+    360px circle at var(--px, 70%) var(--py, 30%),
+    rgba(168, 143, 240, 0.16),
+    rgba(111, 214, 255, 0.05) 45%,
+    transparent 72%
+  );
+  pointer-events: none;
+}
+@media (pointer: coarse) {
+  .x-pointer-glow { display: none; }
+}
+
+/* 编码流：字根沿一条向上偏左的斜线缓慢流过，只占右半屏 */
 .x-keys {
   position: absolute;
   inset: 0;
   overflow: hidden;
+  transform: translate3d(0, calc(var(--sy, 0) * 0.16px), 0);
+  will-change: transform;
 }
 .x-key {
   position: absolute;
@@ -221,22 +241,23 @@ html.x-home-view.x-nav-scrolled .VPNavBar {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 22%;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025));
+  border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow:
-    inset 0 -3px 0 rgba(255, 255, 255, 0.06),
-    0 10px 30px rgba(0, 0, 0, 0.35);
-  color: rgba(233, 236, 255, 0.8);
+    inset 0 -2px 0 rgba(255, 255, 255, 0.05),
+    0 8px 22px rgba(0, 0, 0, 0.32);
+  color: rgba(233, 236, 255, 0.78);
   font-weight: 700;
-  animation: xFloatUp linear infinite;
+  white-space: nowrap;
+  animation: xCodeFloat linear infinite;
   opacity: 0;
 }
-@keyframes xFloatUp {
-  0%   { transform: translateY(0) rotate(var(--r0)); opacity: 0; }
-  8%   { opacity: var(--o); }
-  88%  { opacity: var(--o); }
-  100% { transform: translateY(-115vh) rotate(var(--r1)); opacity: 0; }
+@keyframes xCodeFloat {
+  0%   { transform: translate3d(0, 0, 0) rotate(var(--r0)); opacity: 0; }
+  10%  { opacity: var(--o); }
+  85%  { opacity: var(--o); }
+  100% { transform: translate3d(var(--dx), -112vh, 0) rotate(var(--r1)); opacity: 0; }
 }
 
 .x-hero-inner {
@@ -1296,6 +1317,11 @@ html.x-home-view.x-nav-scrolled .VPNavBar {
   .x-scroll-hint span {
     animation: none !important;
   }
+  /* 视差与跟随光也一并停掉，避免「关了动效但背景还在动」 */
+  .x-keys, .x-grid-overlay {
+    transform: none !important;
+  }
+  .x-pointer-glow { display: none; }
 }
 
 /* ===== Responsive ===== */
@@ -1333,8 +1359,8 @@ html.x-home-view.x-nav-scrolled .VPNavBar {
   .xidx-section { padding: 2.5rem 1rem; }
   .xidx-actions, .xidx-more { flex-direction: column; align-items: center; }
   .xidx-actions .x-btn, .xidx-more .x-btn { width: 100%; justify-content: center; }
-  .x-blob-1 { width: 340px; height: 340px; }
-  .x-blob-2 { width: 280px; height: 280px; }
+  .x-blob-1 { width: 360px; height: 360px; }
+  .x-blob-2 { width: 300px; height: 300px; }
   .x-blob-3 { width: 300px; height: 300px; }
   .x-hero-shot { width: 210px; }
   .x-phone-halo { width: 260px; height: 260px; }

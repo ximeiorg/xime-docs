@@ -2,12 +2,13 @@
   <div class="x-home">
 
     <!-- ===== Hero ===== -->
-    <section class="x-hero">
+    <section class="x-hero" ref="heroRef">
       <div class="x-hero-bg" aria-hidden="true">
         <div class="x-blob x-blob-1"></div>
         <div class="x-blob x-blob-2"></div>
         <div class="x-blob x-blob-3"></div>
         <div class="x-grid-overlay"></div>
+        <div class="x-pointer-glow"></div>
         <div class="x-keys">
           <span
             v-for="k in keys"
@@ -15,14 +16,15 @@
             class="x-key"
             :style="{
               left: k.left,
-              width: k.size,
+              width: k.w,
               height: k.size,
               fontSize: k.font,
               animationDuration: k.dur,
               animationDelay: k.delay,
               '--o': k.opacity,
               '--r0': k.r0,
-              '--r1': k.r1
+              '--r1': k.r1,
+              '--dx': k.dx
             }"
           >{{ k.label }}</span>
         </div>
@@ -301,25 +303,41 @@ function typeLoop() {
   step()
 }
 
-// ---- 飘浮按键粒子（客户端生成，避免 SSR 不一致） ----
-interface FloatKey { id: number; label: string; left: string; size: string; font: string; dur: string; delay: string; opacity: string; r0: string; r1: string }
+// ---- 编码流（客户端生成，避免 SSR 不一致） ----
+interface FloatKey { id: number; label: string; left: string; w: string; size: string; font: string; dur: string; delay: string; opacity: string; r0: string; r1: string; dx: string }
 const keys = ref<FloatKey[]>([])
-const keyLabels = ['五', 'W', '八', 'Q', '字', 'Y', 'R', '根', 'T', '拼', 'U', '音', 'I', '86', 'V', '码']
+/**
+ * 48 个：字根 + 五笔键位字母 + 数字 + 品牌与输入法术语（曦/码/输/入/法、五笔、拼音、候选…）。
+ * 混排后读起来像一段正在被敲出来的编码，术语类用宽键帽区分。
+ */
+const keyLabels = [
+  '五', 'G', '八', 'F', '字', 'D', '根', 'S', 'Q', 'W', '拼', 'E', 'R', 'T', 'Y', '音', 'U', 'I',
+  'O', '86', 'P', 'A', 'H', 'J', 'K', 'L', '曦', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '98', '码',
+  '输', '五笔', '入', '拼音', '法', '候选', '上屏', '词库', '简码', '重码', '编码', '词组'
+]
 
 function genKeys(): FloatKey[] {
   return keyLabels.map((label, i) => {
-    const size = 30 + Math.random() * 34
+    const multi = label.length > 1
+    // 两字词需要更大的键帽和更小的字号，否则会顶出边框
+    const size = multi ? 34 + Math.random() * 24 : 24 + Math.random() * 38
+    const leftPct = 6 + Math.random() * 90
+    // 左半屏压着标题与正文，同样的密度下把透明度打薄，避免影响阅读
+    const damp = leftPct < 42 ? 0.55 : 1
     return {
       id: i,
       label,
-      left: `${4 + Math.random() * 92}%`,
+      left: `${leftPct}%`,
+      w: `${(multi ? size * 1.28 : size).toFixed(0)}px`,
       size: `${size.toFixed(0)}px`,
-      font: `${(size * 0.4).toFixed(0)}px`,
+      font: `${(size * (multi ? 0.3 : 0.4)).toFixed(0)}px`,
+      // 每个字符都向上偏左漂移，整体形成一条斜向的编码流
+      dx: `${(-50 - Math.random() * 110).toFixed(0)}px`,
       dur: `${14 + Math.random() * 16}s`,
-      delay: `${-Math.random() * 20}s`,
-      opacity: (0.14 + Math.random() * 0.22).toFixed(2),
-      r0: `${(Math.random() * 24 - 12).toFixed(0)}deg`,
-      r1: `${(Math.random() * 40 - 20).toFixed(0)}deg`
+      delay: `${-Math.random() * 30}s`,
+      opacity: ((0.14 + Math.random() * 0.2) * damp).toFixed(2),
+      r0: `${(Math.random() * 16 - 8).toFixed(0)}deg`,
+      r1: `${(Math.random() * 26 - 13).toFixed(0)}deg`
     }
   })
 }
@@ -357,14 +375,70 @@ const featureCards = ref<HTMLElement[] | null>(null)
 let sectionObserver: IntersectionObserver | null = null
 let cardObserver: IntersectionObserver | null = null
 
+// ---- Hero 背景：滚动视差 + 指针柔光 ----
+const heroRef = ref<HTMLElement | null>(null)
+let heroRaf = 0
+let pointerRaf = 0
+const pointerPos = { x: 0, y: 0 }
+
+/** 系统开启「减少动态效果」时，视差与跟随光都关掉，只留静态层 */
+function prefersReduced(): boolean {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
+function applyHeroScroll(): void {
+  heroRaf = 0
+  const el = heroRef.value
+  if (!el) return
+  // 只取 hero 可视范围内的位移，滚出首屏后不再更新，省一次布局读取
+  const y = Math.min(window.scrollY, el.offsetHeight)
+  el.style.setProperty('--sy', String(Math.round(y)))
+}
+
+function onHeroScroll(): void {
+  if (heroRaf) return
+  heroRaf = requestAnimationFrame(applyHeroScroll)
+}
+
+function onHeroPointer(e: PointerEvent): void {
+  const el = heroRef.value
+  if (!el || e.pointerType === 'touch') return
+  const r = el.getBoundingClientRect()
+  pointerPos.x = e.clientX - r.left
+  pointerPos.y = e.clientY - r.top
+  if (pointerRaf) return
+  pointerRaf = requestAnimationFrame(() => {
+    pointerRaf = 0
+    const node = heroRef.value
+    if (!node) return
+    node.style.setProperty('--px', `${pointerPos.x.toFixed(0)}px`)
+    node.style.setProperty('--py', `${pointerPos.y.toFixed(0)}px`)
+    node.style.setProperty('--pv', '1')
+  })
+}
+
+function resetHeroPointer(): void {
+  heroRef.value?.style.setProperty('--pv', '0')
+}
+
 function onScroll() {
   document.documentElement.classList.toggle('x-nav-scrolled', window.scrollY > 24)
+  onHeroScroll()
 }
 
 onMounted(() => {
   document.documentElement.classList.add('x-home-view')
   window.addEventListener('scroll', onScroll, { passive: true })
   onScroll()
+
+  // 减少动态效果时连指针跟随一起关掉，避免「关了动效但还有光斑在跑」
+  const hero = heroRef.value
+  const pointerEnabled = !!hero && !prefersReduced()
+  if (hero && pointerEnabled) {
+    hero.addEventListener('pointermove', onHeroPointer, { passive: true })
+    hero.addEventListener('pointerleave', resetHeroPointer, { passive: true })
+  }
+
   keys.value = genKeys()
   typeLoop()
   previewTimer = setInterval(() => {
@@ -410,6 +484,11 @@ onUnmounted(() => {
   document.documentElement.classList.remove('x-home-view')
   document.documentElement.classList.remove('x-nav-scrolled')
   window.removeEventListener('scroll', onScroll)
+  // 没绑定过时移除是空操作，不需要额外记状态
+  heroRef.value?.removeEventListener('pointermove', onHeroPointer)
+  heroRef.value?.removeEventListener('pointerleave', resetHeroPointer)
+  if (heroRaf) cancelAnimationFrame(heroRaf)
+  if (pointerRaf) cancelAnimationFrame(pointerRaf)
   if (typeTimer) clearTimeout(typeTimer)
   if (previewTimer) clearInterval(previewTimer)
   sectionObserver?.disconnect()
