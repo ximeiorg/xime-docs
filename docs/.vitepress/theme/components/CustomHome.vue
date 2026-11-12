@@ -313,24 +313,30 @@ const keys = ref<FloatKey[]>([])
 const keyLabels = [
   '五', 'G', '八', 'F', '字', 'D', '根', 'S', 'Q', 'W', '拼', 'E', 'R', 'T', 'Y', '音', 'U', 'I',
   'O', '86', 'P', 'A', 'H', 'J', 'K', 'L', '曦', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '98', '码',
-  '输', '五笔', '入', '拼音', '法', '候选', '上屏', '词库', '简码', '重码', '编码', '词组'
+  '输', '五笔', '入', '拼音', '法', '候选', '上屏', '词库', '简码', '重码', '编码', '词组',
+  '曦码输入法', '五笔拼音'
 ]
 
 function genKeys(): FloatKey[] {
+  // 手机上文字几乎占满整宽，右侧也会压字，所以整体打薄
+  const narrow = typeof window !== 'undefined' && window.innerWidth < 768
   return keyLabels.map((label, i) => {
     const multi = label.length > 1
     // 两字词需要更大的键帽和更小的字号，否则会顶出边框
     const size = multi ? 34 + Math.random() * 24 : 24 + Math.random() * 38
-    const leftPct = 6 + Math.random() * 90
+    // 键帽宽度按字数递增，长词才放得下
+    const width = size * (1 + (label.length - 1) * 0.42)
+    // 窄屏收窄分布范围，否则右侧的字符会落在视口外
+    const leftPct = 4 + Math.random() * (narrow ? 84 : 92)
     // 左半屏压着标题与正文，同样的密度下把透明度打薄，避免影响阅读
-    const damp = leftPct < 42 ? 0.55 : 1
+    const damp = narrow || leftPct < 42 ? 0.55 : 1
     return {
       id: i,
       label,
       left: `${leftPct}%`,
-      w: `${(multi ? size * 1.28 : size).toFixed(0)}px`,
+      w: `${width.toFixed(0)}px`,
       size: `${size.toFixed(0)}px`,
-      font: `${(size * (multi ? 0.3 : 0.4)).toFixed(0)}px`,
+      font: `${(multi ? (width * 0.64) / label.length : size * 0.4).toFixed(0)}px`,
       // 每个字符都向上偏左漂移，整体形成一条斜向的编码流
       dx: `${(-50 - Math.random() * 110).toFixed(0)}px`,
       dur: `${14 + Math.random() * 16}s`,
