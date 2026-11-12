@@ -440,6 +440,7 @@ qwerty:
 | `repeat` | 重复上一次输入 |
 | `switch_route` | 打开面板（`value`: `emoji` / `symbol` / `clipboard`） |
 | `toggle_ascii` | 中 / 英切换 |
+| `cycle_schema` | 轮换到下一个已启用输入方案（顺序同菜单栏方案列表，末尾回到首个） |
 | `toggle_symbols` | 切换符号面板 |
 | `toggle_shift` | 切换大小写 |
 | `delete` | 退格 |
