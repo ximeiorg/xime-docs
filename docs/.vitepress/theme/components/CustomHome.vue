@@ -33,7 +33,7 @@
         <div class="x-hero-text">
           <div class="x-hero-badge">
             <span class="x-pulse-dot"></span>
-            Android · Windows · Linux 三端可用
+            Android · 鸿蒙 · Windows · Linux · macOS 五端同源
           </div>
           <div class="x-hero-eyebrow">XIME IME</div>
           <h1 class="x-hero-title">
@@ -43,7 +43,7 @@
             支持<span class="x-type-word">{{ typed }}</span><span class="x-caret"></span>
           </p>
           <p class="x-hero-desc">
-            一套 Rime 生态，三端可用：Android、Windows（曦码·曜）与 Linux（曦码·澈）。
+            一套 Rime 生态，五端同源：Android、鸿蒙、Windows（曦码·曜）、Linux（曦码·澈）与 macOS（曦码·逸）。
             五笔、拼音、自定义方案随心切换，本地优先，纯净无广告。
           </p>
           <div class="x-hero-actions">
@@ -101,7 +101,7 @@
     <section class="x-platforms" id="平台" ref="platformsRef">
       <div class="x-section-head">
         <div class="x-section-label">平台支持</div>
-        <h2 class="x-section-title">一个品牌，三端可用</h2>
+        <h2 class="x-section-title">一个品牌，五端同源</h2>
         <p class="x-section-desc">功能大部分通用，安装与设置按平台分开</p>
       </div>
 
@@ -181,7 +181,7 @@
       <div class="x-cta-card">
         <div class="x-cta-glow"></div>
         <h2 class="x-cta-title">选择你的平台开始</h2>
-        <p class="x-cta-desc">Android 稳定可用；Windows 处于 Beta 预览；Linux 面向 KDE Plasma 的 Wayland 会话。</p>
+        <p class="x-cta-desc">Android 稳定可用；Windows 与 Linux 处于 Beta 预览；鸿蒙与 macOS 正在内测，暂未公开发布。</p>
         <div class="x-cta-actions">
           <a href="https://github.com/ximeiorg/Xime/releases" class="x-btn x-btn-primary" target="_blank">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
@@ -190,7 +190,7 @@
           <a href="https://github.com/ximeiorg/XimeYao/releases" class="x-btn x-btn-glass" target="_blank">Windows 预览版</a>
           <a href="https://github.com/ximeiorg/XimeChe/releases" class="x-btn x-btn-glass" target="_blank">Linux 版</a>
         </div>
-        <p class="x-cta-sub">不确定怎么装？看 <a href="/features/">功能文档</a>，或从上方平台卡片进入对应文档。</p>
+        <p class="x-cta-sub">鸿蒙与 macOS 版正在内测，暂无安装包：<a href="/harmony/install">鸿蒙版</a> · <a href="/ximeyi/install">macOS 版</a>。不确定怎么装？看 <a href="/features/">功能文档</a>。</p>
       </div>
     </section>
 
@@ -213,6 +213,14 @@ const platforms = [
     desc: '触屏键盘、九键、手写、语音与剪贴板同步；安装 APK 后在系统中启用输入法即可。'
   },
   {
+    name: '鸿蒙（HarmonyOS）',
+    logo: '🔷',
+    status: '内测中',
+    statusClass: 'x-plat-status-inner',
+    link: '/harmony/install',
+    desc: 'ArkTS + ArkUI 重写的鸿蒙输入法，五笔拼音混输、编码预上屏、语音与设备互联；暂未公开发布。'
+  },
+  {
     name: 'Windows（曦码·曜）',
     logo: '🪟',
     status: 'Beta 预览',
@@ -223,10 +231,18 @@ const platforms = [
   {
     name: 'Linux（曦码·澈）',
     logo: '🐧',
-    status: '开发中',
+    status: 'Beta 预览',
     statusClass: 'x-plat-status-beta',
     link: '/ximeche/install',
     desc: 'KDE Plasma Wayland 原生输入法，不依赖 ibus / fcitx；提供 deb、rpm、Arch 与 tar.gz。'
+  },
+  {
+    name: 'macOS（曦码·逸）',
+    logo: '🍎',
+    status: '内测中',
+    statusClass: 'x-plat-status-inner',
+    link: '/ximeyi/install',
+    desc: 'Rust + InputMethodKit 的五笔输入法，自绘候选窗与面板，插件与剪贴板同步与桌面版同源；暂未公开发布。'
   }
 ]
 
@@ -236,7 +252,7 @@ let previewTimer: ReturnType<typeof setInterval> | null = null
 
 const features = [
   { icon: '⌨️', title: '多方案输入', details: '内置五笔86、五笔拼音混输、全拼、T9 九宫格方案，扩展商店一键下载，支持无线导入自定义方案' },
-  { icon: '🔧', title: 'Rime 引擎', details: '基于中州韵（Rime）引擎构建，候选精准可靠，词库增量部署，完全开源' },
+  { icon: '🔧', title: 'Rime 引擎', details: '基于中州韵（Rime）引擎构建，候选精准可靠，词库增量部署，方案与词典可与社区共用' },
   { icon: '🎤', title: '语音转文本', details: '内置离线流式识别模型，离线可用不吃字，还可安装 FunAsr、火山引擎等在线语音插件' },
   { icon: '🤖', title: 'AI 智能联想', details: 'Transformer 模型预测联想词，搭配 AI 回复、AI 写作、AI 翻译等插件' },
   { icon: '😀', title: '表情与插件', details: 'Emoji 多标签页分类，颜文字、表情包等脚本插件无限扩展' },
@@ -411,16 +427,19 @@ onUnmounted(() => {
 }
 
 .x-preview-stage {
-  width: min(560px, 100%);
-  height: 560px;
+  width: 100%;
+  height: clamp(560px, 74vh, 800px);
   display: flex;
   align-items: center;
   justify-content: center;
   transition: transform 0.25s ease-out;
 }
 
+/* 手机样图是 673×1362 的竖图：按视口高度定尺寸，宽度自动跟比例，避免宽屏下顶破 hero */
 .x-preview-phone .x-hero-shot {
-  width: 270px;
+  height: clamp(540px, 72vh, 780px);
+  width: auto;
+  max-width: 100%;
   animation: xBob 6s ease-in-out infinite;
 }
 
@@ -510,11 +529,11 @@ onUnmounted(() => {
 }
 
 @media (max-width: 960px) {
-  .x-preview-stage { height: 480px; }
-  .x-preview-phone .x-hero-shot { width: 230px; }
+  .x-preview-stage { height: 500px; }
+  .x-preview-phone .x-hero-shot { height: 470px; }
 }
 @media (max-width: 768px) {
-  .x-preview-stage { height: 430px; }
-  .x-preview-phone .x-hero-shot { width: 210px; }
+  .x-preview-stage { height: 440px; }
+  .x-preview-phone .x-hero-shot { height: 410px; }
 }
 </style>

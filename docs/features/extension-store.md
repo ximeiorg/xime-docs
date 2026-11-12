@@ -1,7 +1,7 @@
 # 扩展商店
 
 ::: info 适用平台
-**Android · Windows · Linux**。功能本身三端通用，入口与界面不同；本文以 Android 界面为例，Windows / Linux 的操作路径见对应平台文档。
+**Android · Windows · Linux · macOS**。功能本身各端通用，入口与界面不同；本文以 Android 界面为例。**鸿蒙版不集成插件体系，没有扩展商店入口。**
 :::
 
 

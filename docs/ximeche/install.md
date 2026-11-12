@@ -4,7 +4,7 @@
 
 它与手机版、Windows 桌面版（曦码·曜）是三个独立产品：界面、设置程序、数据目录都不相同，但共用 Rime 的方案与词典格式。
 
-> **开发中的项目**：当前版本面向 KDE Plasma 的 Wayland 会话，很多功能仍在完善。只支持 KDE，不支持 GNOME，也不支持 X11 会话。使用前请先备份 `~/.config/xime`。
+> **Beta 预览**：当前版本面向 KDE Plasma 的 Wayland 会话，部分功能仍在完善。只支持 KDE，不支持 GNOME，也不支持 X11 会话。使用前请先备份 `~/.config/xime`。
 
 ## 与其它版本的区别
 
@@ -144,7 +144,7 @@ kwriteconfig6 --file kwinrc --group Wayland --key VirtualKeyboard ""
 
 - 仅支持 KDE Plasma 的 Wayland 会话；GNOME、X11 均不支持。
 - 仅对 Wayland 应用生效。
-- 项目仍在开发中，界面和功能可能随版本变化。
+- 项目处于 Beta 预览，界面和功能可能随版本变化。
 - 部分终端应用中 `Ctrl+C` / `Ctrl+X` 可能不生效（Wayland 修饰键转发的已知限制）。
 - 设备关联/设备互传仍在开发，暂不作为稳定功能（见[使用与设置](/ximeche/usage#设备互传-开发中)）。
 - 未提供 Flatpak / Snap / Nix 包：输入法守护进程必须作为 KWin 的虚拟键盘客户端运行，沙箱环境拿不到 `WAYLAND_SOCKET`。

@@ -39,7 +39,7 @@ function fetchIndex(path: string): Promise<any> {
 
 export default defineConfig({
   title: "Xime 输入法",
-  description: "基于 Rime 引擎构建的 Android 输入法",
+  description: "基于 Rime 引擎构建的 Android / HarmonyOS / Windows / Linux / macOS 输入法",
   lang: 'zh-CN',
   base: '/',
   // mobile/faq-items/ 下的 md 是 FAQ 页的数据源(经 content loader 收集),不作为独立页面构建
@@ -81,11 +81,12 @@ export default defineConfig({
     ]
   },
   themeConfig: {
-    // ── 文档结构（2026-11-11 调整）──
-    // 1. 落地页只有一个：/（CustomHome），Android / Windows / Linux 三端共用；
-    //    /mobile/、/pc/、/ximeche/ 的 index 都重定向到各自的安装/使用页，不再单独做落地页。
+    // ── 文档结构（2026-11-12 调整）──
+    // 1. 落地页只有一个：/（CustomHome），Android / 鸿蒙 / Windows / Linux / macOS 五端共用；
+    //    /mobile/、/pc/、/ximeche/、/harmony/、/ximeyi/ 的 index 都重定向到各自的安装/使用页，
+    //    不再单独做落地页。
     // 2. 通用功能文档统一放 /features/，页首标注适用平台；平台差异写进平台文档。
-    // 3. 安装、启用、设置程序、数据目录按平台分开：/mobile/、/pc/、/ximeche/。
+    // 3. 安装、启用、设置程序、数据目录按平台分开：/mobile/、/harmony/、/pc/、/ximeche/、/ximeyi/。
     // 4. 设备互联（/device-link/）是跨设备功能，单独成区。
     nav: [
       { text: '首页', link: '/' },
@@ -94,8 +95,10 @@ export default defineConfig({
         items: [
           { text: '功能文档', link: '/features/' },
           { text: 'Android 使用文档', link: '/mobile/usage' },
+          { text: '鸿蒙（HarmonyOS）使用文档', link: '/harmony/usage' },
           { text: 'Windows 使用文档', link: '/pc/usage' },
-          { text: 'Linux 使用文档', link: '/ximeche/install' }
+          { text: 'Linux 使用文档', link: '/ximeche/install' },
+          { text: 'macOS 使用文档', link: '/ximeyi/install' }
         ]
       },
       {
@@ -103,7 +106,9 @@ export default defineConfig({
         items: [
           { text: '使用指南', link: '/device-link/' },
           { text: '手机端（Android）', link: '/device-link/android' },
+          { text: '手机端（鸿蒙）', link: '/device-link/harmony' },
           { text: '桌面端（ximed）', link: '/device-link/ximed' },
+          { text: '桌面端（曦码·逸）', link: '/device-link/ximeyi' },
           { text: '常见问题', link: '/device-link/faq' }
         ]
       },
@@ -120,8 +125,10 @@ export default defineConfig({
         text: '帮助',
         items: [
           { text: 'Android 常见问题', link: '/mobile/faq' },
+          { text: '鸿蒙常见问题', link: '/harmony/faq' },
           { text: 'Windows 常见问题', link: '/pc/faq' },
           { text: 'Linux 常见问题', link: '/ximeche/faq' },
+          { text: 'macOS 常见问题', link: '/ximeyi/faq' },
           { text: 'Android 更新日志', link: '/mobile/changelog' },
           { text: 'Windows 更新日志', link: '/pc/changelog' }
         ]
@@ -249,9 +256,21 @@ export default defineConfig({
           text: '设备互联',
           items: [
             { text: '使用指南', link: '/device-link/' },
-            { text: '手机端（Android）', link: '/device-link/android' },
-            { text: '桌面端（ximed）', link: '/device-link/ximed' },
             { text: '常见问题', link: '/device-link/faq' }
+          ]
+        },
+        {
+          text: '手机端',
+          items: [
+            { text: 'Android', link: '/device-link/android' },
+            { text: '鸿蒙（HarmonyOS）', link: '/device-link/harmony' }
+          ]
+        },
+        {
+          text: '桌面端',
+          items: [
+            { text: 'ximed（Windows / Linux）', link: '/device-link/ximed' },
+            { text: '曦码·逸（macOS）', link: '/device-link/ximeyi' }
           ]
         }
       ],
@@ -274,6 +293,53 @@ export default defineConfig({
             { text: '语音转文本', link: '/features/speech-to-text' },
             { text: '扩展商店', link: '/features/extension-store' },
             { text: '云备份', link: '/features/cloud-backup' }
+          ]
+        }
+      ],
+      // 鸿蒙版是独立的移植线（不集成插件体系），文档与 Android 分开维护。
+      '/harmony/': [
+        {
+          text: '鸿蒙（HarmonyOS）',
+          items: [
+            { text: '总览与安装', link: '/harmony/install' },
+            { text: '使用与设置', link: '/harmony/usage' },
+            { text: '常见问题', link: '/harmony/faq' }
+          ]
+        },
+        {
+          text: '功能文档',
+          items: [
+            { text: '功能总览', link: '/features/' },
+            { text: '输入方案', link: '/features/input-scheme' },
+            { text: '词库管理', link: '/features/dictionary' },
+            { text: '剪贴板', link: '/features/clipboard' },
+            { text: '语音转文本', link: '/features/speech-to-text' },
+            { text: '智能联想', link: '/features/smart-prediction' },
+            { text: '智能纠错', link: '/features/correction' }
+          ]
+        }
+      ],
+      // 曦码·逸与曦码·曜（Windows）、曦码·澈（Linux）共用引擎与设置程序，数据目录与分发方式不同。
+      '/ximeyi/': [
+        {
+          text: '曦码·逸（macOS）',
+          items: [
+            { text: '总览与安装', link: '/ximeyi/install' },
+            { text: '使用与设置', link: '/ximeyi/usage' },
+            { text: '常见问题', link: '/ximeyi/faq' }
+          ]
+        },
+        {
+          text: '功能文档',
+          items: [
+            { text: '功能总览', link: '/features/' },
+            { text: '输入方案', link: '/features/input-scheme' },
+            { text: '词库管理', link: '/features/dictionary' },
+            { text: '剪贴板', link: '/features/clipboard' },
+            { text: '语音转文本', link: '/features/speech-to-text' },
+            { text: '扩展商店', link: '/features/extension-store' },
+            { text: '云备份', link: '/features/cloud-backup' },
+            { text: '设备互联', link: '/device-link/' }
           ]
         }
       ]

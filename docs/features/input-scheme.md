@@ -1,7 +1,7 @@
 # 输入方案
 
 ::: info 适用平台
-**Android · Windows · Linux**。功能本身三端通用，入口与界面不同；本文以 Android 界面为例，Windows / Linux 的操作路径见对应平台文档。
+**Android · 鸿蒙 · Windows · Linux · macOS**。功能本身各端通用，入口与界面不同；本文以 Android 界面为例，其它平台的操作路径见对应平台文档。
 :::
 
 > Windows 桌面版（曦码·曜）的方案管理界面与本文不同，见 [Windows 输入方案](/pc/input-scheme)。
