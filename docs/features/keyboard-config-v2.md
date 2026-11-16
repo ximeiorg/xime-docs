@@ -398,6 +398,10 @@ qwerty:
 # 空格长按改为「重复空格」（value 为次数，默认 5）
 space: { width: 3, tap: { action: space }, long_press: { values: [ { action: repeat_space, value: 5 } ] } }
 
+# 空格上滑二选、下滑三选（该序号没有候选时等同按空格）
+# keys 是整键覆盖：width / tap / long_press 一并写全，避免覆盖后丢键宽、单击空格与长按语音
+space: { width: 3, tap: { action: space }, long_press: { values: [ { action: voice } ] }, swipe_up: { action: select_candidate, value: "2" }, swipe_down: { action: select_candidate, value: "3" } }
+
 # shift 上滑清空、下滑撤回
 shift: { tap: { action: command, value: shift_single }, swipe_up: { action: clear_all }, swipe_down: { action: undo_clear } }
 
@@ -447,6 +451,7 @@ qwerty:
 | `enter` | 回车语义（组合态提交编码；空闲态按输入框 `imeOptions` 执行发送 / 搜索 / 下一项等，或换行） |
 | `newline` | 固定换行（组合态先提交编码，再插入换行；无视输入框的发送 / 搜索等属性） |
 | `space` | 空格语义 |
+| `select_candidate` | 选择第 N 个候选（`value` 为序号，**1 起**，如 `"2"` 表示二选）；该序号没有候选时等同按空格键（组合态提交首候选 / 空闲态上屏空格），不会把数字当文本上屏 |
 | `clear_all` | 上滑清空（撤回最近一次） |
 | `undo_clear` | 下滑撤回 |
 | `voice` | 进入语音输入（含麦克风权限校验） |
