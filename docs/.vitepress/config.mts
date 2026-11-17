@@ -107,6 +107,7 @@ export default defineConfig({
           { text: '使用指南', link: '/device-link/' },
           { text: '手机端（Android）', link: '/device-link/android' },
           { text: '手机端（鸿蒙）', link: '/device-link/harmony' },
+          { text: '桌面端（曦码·曜）', link: '/device-link/ximeyao' },
           { text: '桌面端（ximed）', link: '/device-link/ximed' },
           { text: '桌面端（曦码·逸）', link: '/device-link/ximeyi' },
           { text: '桌面端（曦码·澈）', link: '/device-link/ximeche' },
@@ -236,6 +237,7 @@ export default defineConfig({
           items: [
             { text: '总览与安装', link: '/pc/usage' },
             { text: '输入方案（Windows）', link: '/pc/input-scheme' },
+            { text: '设备互传（配对与同步）', link: '/device-link/ximeyao' },
             { text: '计算器', link: '/features/calculator' },
             { text: '常见问题', link: '/pc/faq' },
             { text: '更新日志', link: '/pc/changelog' }
@@ -247,11 +249,12 @@ export default defineConfig({
             { text: '功能总览', link: '/features/' },
             { text: '剪贴板', link: '/features/clipboard' },
             { text: '语音转文本', link: '/features/speech-to-text' },
-            { text: '云备份', link: '/features/cloud-backup' }
+            { text: '云备份', link: '/features/cloud-backup' },
+            { text: '设备互联', link: '/device-link/' }
           ]
         }
       ],
-      // 设备互联是跨设备形态的功能分区（Android + ximed 桌面端）。
+      // 设备互联是跨设备形态的功能分区（各端输入法 + ximed 桌面端）。
       '/device-link/': [
         {
           text: '设备互联',
@@ -270,7 +273,8 @@ export default defineConfig({
         {
           text: '桌面端',
           items: [
-            { text: 'ximed（Windows / Linux）', link: '/device-link/ximed' },
+            { text: '曦码·曜（Windows）', link: '/device-link/ximeyao' },
+            { text: 'ximed', link: '/device-link/ximed' },
             { text: '曦码·逸（macOS）', link: '/device-link/ximeyi' },
             { text: '曦码·澈（Linux）', link: '/device-link/ximeche' }
           ]

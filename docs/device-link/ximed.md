@@ -2,7 +2,7 @@
 
 ximed 是设备互联的桌面端：一个常驻托盘的剪贴板同步应用，负责与手机或其他电脑配对，并在局域网内直接收发剪贴板。Windows、Linux、macOS 共用同一套界面。
 
-> **ximed 同样支持 macOS**：它与 Windows、Linux 版共用同一套界面和安装包（见下方 macOS 标签页的 `.dmg`）。只是曦码·逸输入法已内置直连节点，macOS 上通常直接用它即可，配对入口在设置程序的「设备关联」页，见[桌面端（曦码·逸）](/device-link/ximeyi)。若想在不使用曦码·逸的 Mac 上单独跑同步节点，或更习惯 ximed 的界面，安装 macOS 版 ximed 即可。
+> 曦码·逸输入法已内置直连节点，配对入口在设置程序的「设备关联」页，见[桌面端（曦码·逸）](/device-link/ximeyi)。
 
 ![ximed 概览页](/ximed/overview.png)
 

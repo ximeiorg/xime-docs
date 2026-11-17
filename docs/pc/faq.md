@@ -14,7 +14,11 @@
 
 ### 数据存在哪里？
 
-`%APPDATA%\xime\`：`rime\` 是方案、词典与用户配置，`logs\` 是日志，`models\` 是语音等模型，`market\` 是已下载的方案包（`market\builtin\` 为内置方案备份），另有 `clipboard.db`（剪贴板历史）。迁移时复制整个目录即可。
+`%APPDATA%\xime\`：`rime\` 是方案、词典与用户配置，`logs\` 是日志，`models\` 是语音等模型，`market\` 是已下载的方案包（`market\builtin\` 为内置方案备份），另有 `clipboard.db`（剪贴板历史）、`clipboard_sync.toml`（同步通道）与 `p2p\`（设备互联的本机身份与配对表）。迁移时复制整个目录即可。
+
+### 怎么和手机互传剪贴板？
+
+曦码·曜内置设备互联：设置程序「设备关联」页生成或输入配对码，再打开「剪贴板 → 剪贴板同步 → 局域网直连」。不需要额外装 ximed。详细步骤与排查见[桌面端（曦码·曜）设备互联](/device-link/ximeyao)。
 
 ## 方案
 
