@@ -30,14 +30,14 @@
 | 手机（鸿蒙） | [曦码鸿蒙版](/harmony/usage) | 设置 → 设备互联 |
 | 桌面（Windows） | [ximed](/device-link/ximed) | 设备 → 配对 |
 | 桌面（Linux） | [曦码·澈输入法](/device-link/ximeche) | 设置程序 → 设备关联（也可用 [ximed](/device-link/ximed)） |
-| 桌面（macOS） | [曦码·逸输入法](/ximeyi/usage) | 设置程序 → 设备关联 |
+| 桌面（macOS） | [曦码·逸输入法](/ximeyi/usage) | 设置程序 → 设备关联（也可用 [ximed](/device-link/ximed)） |
 
 两端的配对协议一致，不分主从：一端显示配对码、另一端输入，或反过来都可以。
 
 > 桌面端有三种载具，用的是同一套 P2P 协议，可以与任意手机端（Android / 鸿蒙）配对，也可以互相配对：
 >
-> - **ximed**：独立托盘应用，Windows / Linux 使用。
-> - **曦码·逸**：macOS 输入法内置的直连节点，不需要额外装 ximed。
+> - **ximed**：独立托盘应用，Windows / Linux / macOS 均可使用。
+> - **曦码·逸**：macOS 输入法内置的直连节点，用它时不必额外装 ximed（也可直接装 macOS 版 ximed）。
 > - **曦码·澈**：Linux 输入法的 daemon（`xime-daemon`）内置直连节点，不需要额外装 ximed，入口同样是设置程序的「设备关联」页。
 
 ## 前提条件
@@ -57,7 +57,7 @@
 
 打开 ximed，进入左侧 **设备** 页，在「配对」中选择 **显示配对码**，点击「生成配对码」。
 
-macOS 上不需要 ximed：打开 **曦码·逸输入法设置 → 设备关联**，点「生成配对码」即可。
+macOS 上用曦码·逸即可：打开 **曦码·逸输入法设置 → 设备关联**，点「生成配对码」即可（也可直接用 macOS 版 ximed，见[桌面端（ximed）](/device-link/ximed)）。
 
 Linux 上也不需要 ximed：打开 **曦码·澈设置程序 → 设备关联**，点「生成配对码」即可。
 
@@ -81,6 +81,7 @@ Android：打开 Xime 设置，进入 **数据与同步 → 设备互联**，点
 - **Linux（曦码·澈）**：设置程序 →「剪贴板」→「剪贴板同步」→ 打开「局域网直连」开关（勾选即生效，无需重启输入法）。
 - **Linux（ximed）**：同 Windows，同步通道 → 添加「局域网直连」→ 保存并应用。
 - **macOS（曦码·逸）**：设置程序 →「剪贴板」→「剪贴板同步」→ 打开「局域网直连」开关。两个开关都打开时按勾选顺序决定优先级，首个优先；只开直连就只走直连。
+- **macOS（ximed）**：同 Windows，同步通道 → 添加「局域网直连」→ 保存并应用。
 
 完成后，在任意一端复制文本，几秒内就能在另一端粘贴。手机端打开键盘时会自动连接并拉取一次当前剪贴板。
 
@@ -88,7 +89,7 @@ Android：打开 Xime 设置，进入 **数据与同步 → 设备互联**，点
 
 - [手机端（Android）](/device-link/android)
 - [手机端（鸿蒙）](/device-link/harmony)
-- [桌面端（ximed，Windows / Linux）](/device-link/ximed)
+- [桌面端（ximed，Windows / Linux / macOS）](/device-link/ximed)
 - [桌面端（曦码·逸，macOS）](/device-link/ximeyi)
 - [桌面端（曦码·澈，Linux）](/device-link/ximeche)
 
@@ -122,7 +123,7 @@ Android：打开 Xime 设置，进入 **数据与同步 → 设备互联**，点
 
 - **Android**：设备互联 → 已配对设备 → 点击「解除」。
 - **鸿蒙**：设备互联 → 配对设备 → 点击设备右侧「解除」。
-- **Windows / Linux（ximed）**：设备 → 已配对设备 → 点击「移除」。
+- **Windows / Linux / macOS（ximed）**：设备 → 已配对设备 → 点击「移除」。
 - **Linux（曦码·澈）**：设置程序 → 设备关联 → 已配对设备 → 点击「移除」并确认。
 - **macOS**：设置程序 → 设备关联 → 已配对设备 → 点击「移除」并确认。
 
