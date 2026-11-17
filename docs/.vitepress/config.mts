@@ -109,6 +109,7 @@ export default defineConfig({
           { text: '手机端（鸿蒙）', link: '/device-link/harmony' },
           { text: '桌面端（ximed）', link: '/device-link/ximed' },
           { text: '桌面端（曦码·逸）', link: '/device-link/ximeyi' },
+          { text: '桌面端（曦码·澈）', link: '/device-link/ximeche' },
           { text: '常见问题', link: '/device-link/faq' }
         ]
       },
@@ -270,7 +271,8 @@ export default defineConfig({
           text: '桌面端',
           items: [
             { text: 'ximed（Windows / Linux）', link: '/device-link/ximed' },
-            { text: '曦码·逸（macOS）', link: '/device-link/ximeyi' }
+            { text: '曦码·逸（macOS）', link: '/device-link/ximeyi' },
+            { text: '曦码·澈（Linux）', link: '/device-link/ximeche' }
           ]
         }
       ],
@@ -281,6 +283,7 @@ export default defineConfig({
           items: [
             { text: '总览与安装', link: '/ximeche/install' },
             { text: '使用与设置', link: '/ximeche/usage' },
+            { text: '设备互传（配对与同步）', link: '/device-link/ximeche' },
             { text: '常见问题', link: '/ximeche/faq' }
           ]
         },

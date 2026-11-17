@@ -86,12 +86,13 @@
 |----|----------|----------|
 | Android | 设置 → 数据与同步 → 设备互联 | 剪贴板 →「剪贴板同步」→ 勾选「局域网直连」 |
 | 鸿蒙 | 设置 → 设备互联 | 同一页的「启用局域网直连同步」开关（无插件通道） |
-| Windows / Linux | ximed → 设备 → 配对 | 同步通道 → 添加「局域网直连」→ 保存并应用 |
+| Windows / Linux（ximed） | ximed → 设备 → 配对 | 同步通道 → 添加「局域网直连」→ 保存并应用 |
+| Linux（曦码·澈） | 设置程序 → 设备关联 | 剪贴板 →「剪贴板同步」→ 打开「局域网直连」 |
 | macOS | 曦码·逸设置程序 → 设备关联 | 剪贴板 →「剪贴板同步」→ 打开「局域网直连」 |
 
 配对码为 6 位数字，**60 秒内有效**，只经人眼传递。配对只建立信任关系，不会自动开始同步——总开关与通道都要打开。手机端只同步纯文本。
 
-分端步骤与排查：[Android](/device-link/android) · [鸿蒙](/device-link/harmony) · [ximed](/device-link/ximed) · [曦码·逸](/device-link/ximeyi)。
+分端步骤与排查：[Android](/device-link/android) · [鸿蒙](/device-link/harmony) · [ximed](/device-link/ximed) · [曦码·逸](/device-link/ximeyi) · [曦码·澈](/device-link/ximeche)。
 
 ### 同步插件
 

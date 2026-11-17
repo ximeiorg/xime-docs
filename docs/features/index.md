@@ -28,7 +28,7 @@
 | [工具栏自定义](/features/toolbar) | 候选栏工具栏按钮 | ✅ | ✅ | — | — | — |
 | [键盘配置](/features/keyboard-config-v2) | 自定义按键布局与手势 | ✅ | — | — | — | — |
 | [按键外观](/features/keyboard-appearance) | 单键圆角与背景色 | ✅ | ✅ | — | — | — |
-| [设备互联](/device-link/) | 局域网直连同步剪贴板 | ✅ | ✅ | ✅（ximed） | 🧪 开发中 | ✅ |
+| [设备互联](/device-link/) | 局域网直连同步剪贴板 | ✅ | ✅ | ✅（ximed） | ✅（内置） | ✅ |
 | [插件](/plugins/) | 插件安装、开发与测试 | ✅ | — | ✅ | ✅ | ✅ |
 
 > ✅ = 有对应功能；— = 当前版本无此入口；🧪 = 开发中。表格按当前文档收录情况整理，未列出的平台能力可能尚未验证。
@@ -40,7 +40,7 @@
 - **Android（曦码）**：[使用文档](/mobile/usage) · [常见问题](/mobile/faq)
 - **鸿蒙（HarmonyOS）**：[总览与安装](/harmony/install) · [使用与设置](/harmony/usage) · [常见问题](/harmony/faq)
 - **Windows（曦码·曜）**：[总览与安装](/pc/usage) · [常见问题](/pc/faq)
-- **Linux（曦码·澈）**：[总览与安装](/ximeche/install) · [使用与设置](/ximeche/usage) · [常见问题](/ximeche/faq)
+- **Linux（曦码·澈）**：[总览与安装](/ximeche/install) · [使用与设置](/ximeche/usage) · [设备互传](/device-link/ximeche) · [常见问题](/ximeche/faq)
 - **macOS（曦码·逸）**：[总览与安装](/ximeyi/install) · [使用与设置](/ximeyi/usage) · [常见问题](/ximeyi/faq)
 
 ## 手机端专属

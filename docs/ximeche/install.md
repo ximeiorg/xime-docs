@@ -118,10 +118,11 @@ Plasma 5 使用 `kwriteconfig5` / `qdbus`，参数相同。
 | `~/.config/xime/` | 配置根目录 |
 | `~/.config/xime/rime/` | Rime 方案源文件、用户配置、`build/` 部署产物、用户词典 |
 | `~/.config/xime/xime.custom.yaml` | 外观与行为自定义 |
-| `~/.config/xime/clipboard.db` | 剪贴板历史与快捷发送 |
+| `~/.config/xime/xime.db` | 统一库：剪贴板历史与快捷发送（设置程序共读） |
 | `~/.config/xime/plugins/` | 已安装插件 |
 | `~/.config/xime/models/` | 语音等本地模型 |
-| `~/.config/xime/p2p/` | 设备关联的身份与配对表（开发中） |
+| `~/.config/xime/p2p/` | 设备互传的本机身份与配对表 |
+| `~/.config/xime/clipboard_sync.toml` | 剪贴板同步通道配置 |
 | `~/.config/xime/xime.log.YYYY-MM-DD` | 按天轮转的运行日志 |
 | `/usr/share/xime/` | 随包资源：方案种子、图标、语音运行库 |
 
@@ -146,7 +147,7 @@ kwriteconfig6 --file kwinrc --group Wayland --key VirtualKeyboard ""
 - 仅对 Wayland 应用生效。
 - 项目处于 Beta 预览，界面和功能可能随版本变化。
 - 部分终端应用中 `Ctrl+C` / `Ctrl+X` 可能不生效（Wayland 修饰键转发的已知限制）。
-- 设备关联/设备互传仍在开发，暂不作为稳定功能（见[使用与设置](/ximeche/usage#设备互传-开发中)）。
+- 设备互传只同步纯文本，且要求两台设备在同一局域网；跨网络请用剪贴板同步插件（见[使用与设置](/ximeche/usage#设备互传)）。
 - 未提供 Flatpak / Snap / Nix 包：输入法守护进程必须作为 KWin 的虚拟键盘客户端运行，沙箱环境拿不到 `WAYLAND_SOCKET`。
 
 下一步可以看[使用与设置](/ximeche/usage)，或直接查[常见问题](/ximeche/faq)。
